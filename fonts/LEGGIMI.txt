@@ -1,0 +1,9 @@
+Font Poppins (facoltativo)
+
+Per avere lo stesso aspetto della versione che hai visto, copia qui questi cinque file:
+Poppins-Regular.ttf, Poppins-Medium.ttf, Poppins-SemiBold.ttf, Poppins-Bold.ttf, Poppins-ExtraBold.ttf
+
+Puoi scaricarli dal sito Google Fonts (cerca "Poppins", poi "Download family"). Il font è libero (licenza SIL Open Font License).
+Se non li metti, l'app usa il font di sistema del telefono e funziona lo stesso.
+
+Perché i font sono qui e non caricati da Google: se l'app li chiedesse a un sito esterno, quel sito vedrebbe che qualcuno apre l'app.
