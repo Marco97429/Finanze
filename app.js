@@ -74,7 +74,7 @@ function openConfirm(kind,id){
 document.addEventListener("submit",e=>{
   if(e.target.id!=="mf"||!modal)return;e.preventDefault();
   const q=k=>e.target.querySelector('[data-f="'+k+'"]'),v=k=>q(k).value;
-  const a=parseFloat(v("a")),d=v("d").trim();if(!d||!(a>=0))return;
+  const a=parseFloat(v("a")),d=v("d").trim();if(!d||!(a>=0))return;if(!(a<=1e7)){$("merr").textContent="Importo troppo alto: il massimo è 10.000.000 €";return}
   if(modal.kind==="new-exp"){S.items.push({id:Date.now(),m:$("month").value,d,a,c:v("c"),s:v("s")})}
   else if(modal.kind==="edit-exp"){const it=S.items.find(i=>i.id==modal.id);if(!it)return;Object.assign(it,{d,a,c:v("c"),s:v("s")})}
   else{const from=v("from"),to=v("to");
@@ -109,6 +109,13 @@ function doImport(){
   let d;try{d=JSON.parse($("ima").value)}catch(e){$("merr").textContent="Il testo non è un backup valido.";return}
   const c=cleanImport(d);if(!c){$("merr").textContent="Il backup non contiene dati riconoscibili.";return}
   S=c;save();location.reload()}
+function openFail(){
+  if(modal&&modal.kind==="fail")return;
+  modal={kind:"fail"};
+  $("mt").textContent="Qualcosa non ha funzionato";
+  $("mbody").innerHTML=`<p class="mtxt">L’app ha trovato un errore. I tuoi dati sono ancora salvati su questo dispositivo. Prova a ricaricare. Se l’errore si ripete, puoi esportare un backup oppure reimpostare l’app, cancellando tutti i dati.</p><div class="macts"><button type="button" class="mini" data-reload="1">Ricarica</button><button type="button" class="mini" data-exp="1">Esporta backup</button><button type="button" class="mini danger" data-reset="1">Reimposta</button></div>`;
+  $("mod").hidden=false}
+addEventListener("error",e=>{const m=(e&&e.message)||"";if(/ResizeObserver|Script error/i.test(m))return;openFail()});
 function setRecOpen(o){$("rf").hidden=!o;const b=$("rtg");b.textContent=o?"−":"+";b.setAttribute("aria-expanded",o);b.setAttribute("aria-label",o?"Chiudi senza aggiungere":"Aggiungi spesa ricorrente");if(o){$("rd").value="";$("ra").value="";$("rm").value=mk(new Date());$("rt").value="";chkR();$("rd").focus()}else{$("rf").reset();chkR()}}
 $("rf").addEventListener("submit",e=>{e.preventDefault();const a=parseFloat($("ra").value);if(!(a>=0)||!$("rm").value)return;
   S.rec.push({id:"r"+Date.now(),d:$("rd").value.trim(),a,c:$("rc").value,from:$("rm").value,to:$("rt").value||""});
@@ -127,12 +134,12 @@ function renderSal(){
   const keys=Array.from({length:12},(_,i)=>Y+"-"+String(i+1).padStart(2,"0"));
   const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],vals=keys.map(k=>S.sals[k]!==undefined?S.sals[k]:(k>fi&&k<la?0:null)),ok=vals.filter(v=>v!==null);
   if(!ok.length){$("sline").innerHTML='<div class="empty">Nessuno stipendio inserito per questo anno: usa i campi qui sotto.</div>';$("snote").textContent="";return}
-  const top=(Math.floor(Math.max(...ok)/500)+1)*500,n=top/500,H=Math.max(150,n*30),B=20+H;
+  const mx=Math.max(...ok),step=[500,1000,2000,2500,5000,10000,20000,25000,50000,100000,200000,250000,500000,1000000,2000000,5000000,10000000].find(q=>Math.floor(mx/q)+1<=8)||10000000,top=(Math.floor(mx/step)+1)*step,n=top/step,H=Math.max(150,n*28),B=20+H;
   const X=i=>56+i*(560/11),Yy=v=>B-v/top*H;
   const fm=x=>"€"+new Intl.NumberFormat("it-IT",{maximumFractionDigits:0}).format(x);
   const pts=vals.map((v,i)=>v===null?null:[X(i),Yy(v)]).filter(Boolean);
   const ln=pts.map(q=>q.join(",")).join(" ");
-  let g="";for(let j=0;j<=n;j++){const y=B-j*H/n;g+=`<line x1="56" x2="620" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)"/><text x="48" y="${y+4}" text-anchor="end" font-size="11" fill="#9aa6ad">${fm(j*500)}</text>`}
+  let g="";for(let j=0;j<=n;j++){const y=B-j*H/n;g+=`<line x1="56" x2="620" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)"/><text x="48" y="${y+4}" text-anchor="end" font-size="11" fill="#9aa6ad">${fm(j*step)}</text>`}
   const mn=keys.map((k,i)=>`<text x="${X(i)}" y="${B+22}" text-anchor="middle" font-size="11" fill="#9aa6ad">${MN.format(new Date(Y,i,1))}</text>`).join("");
   const dots=vals.map((v,i)=>{if(v===null)return"";const ent=S.sals[keys[i]]!==undefined;
     return `<circle cx="${X(i)}" cy="${Yy(v)}" r="${ent?5:4}" fill="${ent?"#7fd6e8":"#0b0e11"}" stroke="#7fd6e8" stroke-width="2"/>`+(ent?`<text x="${X(i)}" y="${Yy(v)-11}" text-anchor="middle" font-size="11" font-weight="600" fill="#e8fbff">${fm(v)}</text>`:"")}).join("");
@@ -142,9 +149,9 @@ function updPh(){const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1]
 function renderSalEd(){
   const Y=+$("month").value.slice(0,4);
   $("sed").innerHTML=Array.from({length:12},(_,i)=>{const k=Y+"-"+String(i+1).padStart(2,"0");
-    return `<label class="sm"><span>${MN.format(new Date(Y,i,1))} ${Y}</span><input type="number" min="0" step="10" inputmode="decimal" data-sm="${k}" value="${S.sals[k]!==undefined?S.sals[k]:""}" aria-label="Stipendio netto di ${MN.format(new Date(Y,i,1))} ${Y}"></label>`}).join("");updPh()}
+    return `<label class="sm"><span>${MN.format(new Date(Y,i,1))} ${Y}</span><input type="number" min="0" max="1000000" step="10" inputmode="decimal" data-sm="${k}" value="${S.sals[k]!==undefined?S.sals[k]:""}" aria-label="Stipendio netto di ${MN.format(new Date(Y,i,1))} ${Y}"></label>`}).join("");updPh()}
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
-  const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else S.sals[k]=Math.max(0,v);save();updPh();render()});
+  const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
 function render(){
   const m=$("month").value, sal=salOf(m);
@@ -200,6 +207,8 @@ document.addEventListener("click",e=>{
   if(t.dataset.view)show(t.dataset.view);
   if(t.dataset.tg)setRecOpen($("rf").hidden);
   if(t.dataset.tg2)setExpOpen($("f").hidden);
+  if(t.dataset.reload)location.reload();
+  if(t.dataset.reset){if(t.dataset.sure){try{localStorage.removeItem(KEY)}catch(e){}location.reload()}else{t.dataset.sure="1";t.textContent="Conferma: cancella tutto"}}
   if(t.dataset.exp)openExport();
   if(t.dataset.imp)openImport();
   if(t.dataset.excopy){const ta=$("exa");ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}t.textContent=ok?"Copiato":"Copia a mano"}
@@ -223,7 +232,7 @@ document.addEventListener("change",e=>{
   const d=e.target.dataset||{};if(d.mo){const yy=$("month").value.slice(0,4);$("month").value=yy+"-"+e.target.value;syncSal();ensureRec();render();return}
   if(d.lm){S.lim[d.lm].t=e.target.value;save();render()}
   if(d.lv){S.lim[d.lv]={t:"eur",v:Math.max(0,parseFloat(e.target.value)||0)};save();render()}});
-render();
+try{render()}catch(e){openFail()}
 (function(){
   const tr=$("sb"),th=$("sbt"),de=document.documentElement;
   function upd(){const vh=innerHeight,dh=de.scrollHeight;
