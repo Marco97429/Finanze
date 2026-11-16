@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="theme-color" content="#07090c">
+<meta name="description" content="Le mie finanze: spese mensili, stipendio e budget. I dati restano sul tuo dispositivo.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finanze">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Le mie finanze</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+<header class="hdr">
+  <div class="brand"><div class="logo">€</div><div><strong>Le mie finanze</strong><small id="yr"></small></div></div>
+  <nav aria-label="Sezioni">
+    <button class="on" data-view="home">Panoramica</button>
+    <button data-view="spese">Spese</button>
+    <button data-view="budget">Budget</button>
+  </nav>
+  <div class="stat"><i class="live"></i><div><strong>Oggi</strong><small id="upd"></small></div></div>
+</header>
+<main>
+  <div class="mrow"><select class="pill" id="pill" data-mo="1" aria-label="Mese visualizzato"></select>
+  <div class="top">
+    <input type="month" id="month" hidden>
+    <input type="number" id="salary" hidden>
+  </div></div>
+
+  <section id="v-home">
+    <div class="hero">
+      <div><h2>Il tuo denaro,<br>finalmente chiaro.</h2><p>Entrate, spese e obiettivi in un solo spazio essenziale.</p></div>
+      <div class="art" aria-hidden="true">
+        <div class="slab"><svg viewBox="0 0 300 150"><g fill="#7fd6e8"><rect x="22" y="96" width="22" height="30" rx="5"/><rect x="54" y="78" width="22" height="48" rx="5"/><rect x="86" y="56" width="22" height="70" rx="5"/><rect x="118" y="82" width="22" height="44" rx="5"/></g><polyline points="24,64 64,48 104,36 146,20" fill="none" stroke="#e8fbff" stroke-width="2"/><g fill="#e8fbff"><circle cx="24" cy="64" r="4"/><circle cx="64" cy="48" r="4"/><circle cx="104" cy="36" r="4"/><circle cx="146" cy="20" r="4"/></g><circle cx="232" cy="70" r="38" fill="none" stroke="#2c4a54" stroke-width="16"/><circle id="artarc" cx="232" cy="70" r="38" fill="none" stroke="#7fd6e8" stroke-width="16" stroke-dasharray="52 240" transform="rotate(-90 232 70)"/><text id="artpct" x="232" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#e8fbff">–</text></svg></div>
+        <div class="coin">€</div>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kc"><div class="kh"><span>Entrate reali</span><button class="ib" data-view="entrate" aria-label="Apri i dettagli delle entrate">↗</button></div><div class="kv" id="k2">–</div><div class="ks">Stipendio netto del mese</div></div>
+      <div class="kc"><div class="kh"><span>Uscite</span><button class="ib" data-view="spese" aria-label="Apri le spese">○</button></div><div class="kv" id="k3">–</div><div class="ks" id="k3s"></div></div>
+      <div class="kc"><div class="kh"><span>Saldo netto</span><i>≈</i></div><div class="kv" id="k1">–</div><div class="ks">Entrate meno uscite del mese</div></div>
+      <div class="kc"><div class="kh"><span>Preventivato</span><i>◎</i></div><div class="kv" id="k4">–</div><div class="ks" id="k4s"></div></div>
+    </div>
+    <div class="two">
+      <div class="card dist">
+        <div class="dh"><div><small class="eyebrow">Distribuzione</small><h3>Spese per categoria</h3></div><select class="mchip" id="mchip" data-mo="1" aria-label="Mese visualizzato"></select></div>
+        <div class="dbody"><div class="donut" id="donut"><div class="hole" id="hole"></div></div><ul class="dl" id="lg"></ul></div>
+      </div>
+      <div class="card"><h2>Spese degli ultimi 6 mesi</h2><div id="bars"></div></div>
+    </div>
+    <div class="card"><h2>Risparmio accumulato</h2><div id="line"></div></div>
+  </section>
+
+  <section id="v-entrate" hidden>
+    <button class="mini back" data-view="home">← Panoramica</button>
+    <div class="card">
+      <div class="dh"><div><small class="eyebrow">Entrate reali</small><h3>Andamento dello stipendio</h3></div>
+        <div class="acts" style="align-items:center"><button class="mini" data-yr="-1" aria-label="Anno precedente">‹</button><span class="mchip" id="yrchip"></span><button class="mini" data-yr="1" aria-label="Anno successivo">›</button></div></div>
+      <div id="sline"></div>
+      <div class="sub" id="snote"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="dh"><div><small class="eyebrow">Stipendio netto</small><h3>Importo di ogni mese</h3></div></div>
+      <div class="sgrid" id="sed"></div>
+      <div class="sub">Inserisci l’importo di ciascun mese: viene usato in tutta l’app. I mesi senza importo tra due stipendi inseriti valgono 0 €; quelli dopo l’ultimo stipendio inserito restano vuoti.</div>
+    </div>
+  </section>
+
+  <section id="v-spese" hidden>
+    <div class="card" style="margin-bottom:12px">
+      <div class="dh" style="align-items:center;margin-bottom:8px"><h2 style="margin:0">Spese ricorrenti <span class="cnt" id="rcnt"></span></h2><div class="hbtns"><button class="new" data-new="rec" type="button">NEW</button><button class="tg" id="rtg" data-col="rec" type="button" aria-expanded="true" aria-controls="rec" aria-label="Comprimi le spese ricorrenti" title="Comprimi"></button></div></div>
+      <ul id="rec"></ul>
+      <form id="rf" hidden style="margin:14px 0 0">
+        <input id="rd" placeholder="Descrizione (es. Abbonamento)" required class="full" aria-label="Descrizione ricorrente">
+        <input id="ra" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo mensile €" required aria-label="Importo mensile">
+        <select id="rc" aria-label="Categoria ricorrente"></select>
+        <label>Dal mese<select id="rm"></select></label>
+        <label>Fino al mese (facoltativo)<select id="rt"></select></label>
+        <button class="main full" type="submit">Aggiungi ricorrente</button>
+      </form>
+    </div>
+    <div class="card">
+      <div class="dh" style="align-items:center;margin-bottom:8px"><h2 style="margin:0">Spese del mese <span class="cnt" id="ecnt"></span></h2><div class="hbtns"><button class="new" data-new="exp" type="button">NEW</button><button class="tg" id="etg" data-col="exp" type="button" aria-expanded="true" aria-controls="list" aria-label="Comprimi le spese del mese" title="Comprimi"></button></div></div>
+      <form id="f" hidden>
+        <input id="d" placeholder="Descrizione (es. Affitto)" required class="full" aria-label="Descrizione">
+        <input id="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo €" required aria-label="Importo">
+        <select id="c" aria-label="Categoria"></select>
+        <select id="s" aria-label="Stato"><option value="paid">Pagata</option><option value="plan">Preventivata</option></select>
+        <button class="main" type="submit">Aggiungi spesa</button>
+      </form>
+      <ul id="list"></ul>
+    </div>
+  </section>
+
+  <section id="v-budget" hidden>
+    <div class="card">
+      <h2>Budget per categoria</h2>
+      <p class="sub" style="margin:0 0 6px">Imposta il budget in euro di ogni categoria: la percentuale si calcola da sola come budget ÷ stipendio netto × 100.</p>
+      <div id="cats"></div>
+    </div>
+  </section>
+<footer class="foot">
+    <p>I tuoi dati restano su questo dispositivo: l’app non li invia a nessun server.</p>
+    <div class="acts"><button class="mini" data-exp="1">Esporta backup</button><button class="mini" data-imp="1">Importa backup</button></div>
+  </footer>
+</main>
+</div>
+<div class="mod" id="mod" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="dh" style="align-items:center;margin-bottom:6px"><h3 id="mt"></h3><button class="mini ic" type="button" data-mclose aria-label="Chiudi">✕</button></div><div id="mbody"></div></div></div>
+<div id="sb" hidden aria-hidden="true"><div id="sbt"></div></div>
+<script src="app.js"></script>
+</body>
+</html>
