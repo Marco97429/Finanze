@@ -54,7 +54,7 @@ function renderCnt(){const m=$("month").value;$("rcnt").textContent=S.rec.length
 applyCol();
 function setExpOpen(o){$("f").hidden=!o;const b=$("etg");b.textContent=o?"−":"+";b.setAttribute("aria-expanded",o);b.setAttribute("aria-label",o?"Chiudi senza aggiungere":"Aggiungi spesa");if(o){$("d").focus()}else{$("f").reset()}}
 let modal=null;
-function closeModal(){$("mod").hidden=true;modal=null;ne=null;$("mbody").innerHTML="";document.querySelector(".mbox").classList.remove("sheet")}
+function closeModal(){$("mod").hidden=true;modal=null;ne=null;am=null;$("mbody").innerHTML="";document.querySelector(".mbox").classList.remove("sheet")}
 function openModal(kind,id){
   const r=kind==="edit-rec"?S.rec.find(x=>x.id===id):kind==="edit-exp"?S.items.find(i=>i.id==id):null,isRec=kind==="new-rec"||kind==="edit-rec";
   if(kind.startsWith("edit")&&!r)return;
@@ -190,6 +190,32 @@ document.addEventListener("keydown",e=>{
   if(/^[0-9]$/.test(e.key)){nePress(e.key);e.preventDefault()}
   else if(e.key===","||e.key==="."){nePress(",");e.preventDefault()}
   else if(e.key==="Backspace"){nePress("bk");e.preventDefault()}});
+let am=null;
+function amtNext(a,k){
+  if(k==="bk")return a.slice(0,-1);
+  if(k===",")return !a?"0,":(a.includes(",")?a:a+",");
+  if(a.includes(","))return a.split(",")[1].length<2?a+k:a;
+  if(a==="0")return k;
+  return a.length<7?a+k:a}
+function amUpdate(){$("amval").textContent=am.amt||"0,00";$("amval").classList.toggle("dim",!am.amt)}
+function amPress(k){am.amt=amtNext(am.amt,k);amUpdate()}
+function openAmount(title,label,val,max,cb){
+  modal={kind:"amount-sheet"};
+  am={amt:(val===undefined||val===null||val==="")?"":String(val).replace(".",","),max,cb};
+  document.querySelector(".mbox").classList.add("sheet");
+  $("mt").textContent=title;
+  $("mbody").innerHTML=`<div class="ns"><div class="namt"><span>${label}</span><div class="nvv"><i>€</i><b id="amval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-ak="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" data-amok="1"><span>Conferma</span>${IC_OK}</button></div>`;
+  $("mod").hidden=false;amUpdate()}
+function amDone(){const v=am.amt?Math.min(parseFloat(am.amt.replace(",",".")),am.max):null,cb=am.cb;closeModal();cb(isNaN(v)?null:v)}
+function mLong(k){const n=new Intl.DateTimeFormat("it-IT",{month:"long",year:"numeric"}).format(new Date(+k.slice(0,4),+k.slice(5,7)-1,1));return n[0].toUpperCase()+n.slice(1)}
+function openSalAmt(k){openAmount("Stipendio di "+mLong(k).toLowerCase(),"Stipendio netto",S.sals[k],1e6,v=>{if(v===null)delete S.sals[k];else S.sals[k]=v;save();updPh();render();const el=document.querySelector('[data-sm="'+k+'"]');if(el)el.value=v===null?"":v})}
+function openBudAmt(c){const cur=Math.round(limOf(c,salOf($("month").value))*100)/100;openAmount("Budget "+c,"Budget mensile",cur||undefined,1e6,v=>{S.lim[c]={t:"eur",v:v===null?0:v};save();render()})}
+document.addEventListener("keydown",e=>{
+  if(!modal||modal.kind!=="amount-sheet"||!am)return;
+  if(/^[0-9]$/.test(e.key)){amPress(e.key);e.preventDefault()}
+  else if(e.key===","||e.key==="."){amPress(",");e.preventDefault()}
+  else if(e.key==="Backspace"){amPress("bk");e.preventDefault()}
+  else if(e.key==="Enter"&&e.target.tagName!=="BUTTON"){amDone();e.preventDefault()}});
 function setRecOpen(o){$("rf").hidden=!o;const b=$("rtg");b.textContent=o?"−":"+";b.setAttribute("aria-expanded",o);b.setAttribute("aria-label",o?"Chiudi senza aggiungere":"Aggiungi spesa ricorrente");if(o){$("rd").value="";$("ra").value="";$("rm").value=mk(new Date());$("rt").value="";chkR();$("rd").focus()}else{$("rf").reset();chkR()}}
 $("rf").addEventListener("submit",e=>{e.preventDefault();const a=parseFloat($("ra").value);if(!(a>=0)||!$("rm").value)return;
   S.rec.push({id:"r"+Date.now(),d:$("rd").value.trim(),a,c:$("rc").value,from:$("rm").value,to:$("rt").value||""});
@@ -223,7 +249,7 @@ function updPh(){const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1]
 function renderSalEd(){
   const Y=+$("month").value.slice(0,4);
   $("sed").innerHTML=Array.from({length:12},(_,i)=>{const k=Y+"-"+String(i+1).padStart(2,"0");
-    return `<label class="sm"><span>${MN.format(new Date(Y,i,1))} ${Y}</span><input type="number" min="0" max="1000000" step="10" inputmode="decimal" data-sm="${k}" value="${S.sals[k]!==undefined?S.sals[k]:""}" aria-label="Stipendio netto di ${MN.format(new Date(Y,i,1))} ${Y}"></label>`}).join("");updPh()}
+    return `<label class="sm"><span>${MN.format(new Date(Y,i,1))} ${Y}</span><input type="text" readonly inputmode="none" data-sm="${k}" value="${S.sals[k]!==undefined?S.sals[k]:""}" aria-label="Stipendio netto di ${MN.format(new Date(Y,i,1))} ${Y}"></label>`}).join("");updPh()}
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
@@ -267,7 +293,7 @@ function render(){
   $("cats").innerHTML=ord().map((c,ix,arr)=>{
     const p=sum(m,i=>i.c===c&&i.s==="paid"),q=sum(m,i=>i.c===c&&i.s==="plan");
     const lim=limOf(c,sal),pc=sal?(lim/sal*100).toFixed(2).replace(".",",")+"% dello stipendio":"–",t=p+q,den=Math.max(lim,t,1),over=lim>0&&t>lim;
-    return `<div class="cat"><div class="h"><span class="nm"><span class="mv"><button class="mini" data-mv="${c}" data-dir="-1" aria-label="Sposta ${c} su"${ix===0?" disabled":""}>▲</button><button class="mini" data-mv="${c}" data-dir="1" aria-label="Sposta ${c} giù"${ix===arr.length-1?" disabled":""}>▼</button></span>${c}</span><span class="${over?"over":""}">${eur(t)} / ${eur(lim)}</span></div><div class="t" style="background:${lim>0?"#1f9a5a":"var(--line)"}"><i style="width:${p/den*100}%;background:#e5484d"></i><i style="width:${q/den*100}%;background:#f4a09c"></i></div><div class="n"><span class="acts"><label class="bud">Budget €<input type="number" min="0" step="any" value="${S.lim[c].v}" data-lv="${c}" aria-label="Budget ${c} in euro"></label><b class="pc">${pc}</b></span><span>${over?"Oltre il limite di "+eur(t-lim):lim?"Restano "+eur(lim-t):""}</span></div></div>`}).join("");
+    return `<div class="cat"><div class="h"><span class="nm"><span class="mv"><button class="mini" data-mv="${c}" data-dir="-1" aria-label="Sposta ${c} su"${ix===0?" disabled":""}>▲</button><button class="mini" data-mv="${c}" data-dir="1" aria-label="Sposta ${c} giù"${ix===arr.length-1?" disabled":""}>▼</button></span>${c}</span><span class="${over?"over":""}">${eur(t)} / ${eur(lim)}</span></div><div class="t" style="background:${lim>0?"#1f9a5a":"var(--line)"}"><i style="width:${p/den*100}%;background:#e5484d"></i><i style="width:${q/den*100}%;background:#f4a09c"></i></div><div class="n"><span class="acts"><label class="bud">Budget €<input type="text" readonly inputmode="none" value="${S.lim[c].v}" data-lv="${c}" aria-label="Budget ${c} in euro"></label><b class="pc">${pc}</b></span><span>${over?"Oltre il limite di "+eur(t-lim):lim?"Restano "+eur(lim-t):""}</span></div></div>`}).join("");
 }
 function show(v){view=v;["home","entrate","spese","budget"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"?"home":v)));$("pill").hidden=v==="entrate";$("mback").hidden=v!=="spese";$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
@@ -287,6 +313,10 @@ document.addEventListener("click",e=>{
   if(t.dataset.ncedit)$("nchips").hidden=!$("nchips").hidden;
   if(t.dataset.nc&&ne){ne.cat=t.dataset.nc;ne.manual=true;ne.sug=false;$("nchips").hidden=true;neUpdate()}
   if(t.dataset.nsave&&ne)neSave();
+  if(t.dataset.sm!==undefined&&t.tagName==="INPUT")openSalAmt(t.dataset.sm);
+  if(t.dataset.lv!==undefined&&t.tagName==="INPUT")openBudAmt(t.dataset.lv);
+  if(t.dataset.ak&&am)amPress(t.dataset.ak);
+  if(t.dataset.amok&&am)amDone();
   if(t.dataset.reload)location.reload();
   if(t.dataset.reset){if(t.dataset.sure){try{localStorage.removeItem(KEY)}catch(e){}location.reload()}else{t.dataset.sure="1";t.textContent="Conferma: cancella tutto"}}
   if(t.dataset.exp)openExport();
