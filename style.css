@@ -247,3 +247,7 @@ button:disabled{opacity:.35;cursor:default}
 .mbox.sheet .nsave{background:linear-gradient(180deg,#f58a22,#ee7410);color:#3a1d06;font-weight:600;box-shadow:0 6px 16px rgba(120,50,0,.3)}
 .mbox.sheet .nsave:disabled{opacity:.55;box-shadow:none}
 .mbox.sheet .err{color:#b3261e;font-weight:500}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{touch-action:manipulation}
+.sm input[readonly],.cat input[readonly]{cursor:pointer;caret-color:transparent}
+@media (pointer:coarse){input,textarea,.cat input,.sm input{font-size:16px}.cat input{width:92px}}
