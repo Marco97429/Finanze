@@ -24,7 +24,7 @@
     <button type="button" data-view="statistiche" aria-label="Statistiche"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10H12z"/><path d="M14 2.2V10h7.8A10 10 0 0 0 14 2.2z"/></svg><span>Statistiche</span></button>
     <button type="button" data-view="x-cal" aria-label="Calendario"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2zM5 9v10h14V9zm2 2h3v3H7z"/></svg><span>Calendario</span></button>
     <button type="button" data-view="x-trans" aria-label="Transazioni"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm3 4v2h10V8zm0 4v2h10v-2zm0 4v1.5h6V16z"/></svg><span>Transazioni</span></button>
-    <button type="button" data-view="x-imp" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.4h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>Impostazioni</span></button>
+    <button type="button" data-view="impostazioni" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.4h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>Impostazioni</span></button>
   </nav>
 </header>
 <main>
@@ -55,6 +55,15 @@
     </div>
   </section>
 
+  <section id="v-impostazioni" hidden>
+    <h1 class="gh sth1">Impostazioni</h1>
+    <div class="card">
+      <h2 class="sth2">Backup dei dati</h2>
+      <p class="sub" style="margin:0 0 16px">I tuoi dati restano su questo dispositivo: l’app non li invia a nessun server. Esporta un backup per conservarli o trasferirli, e importalo per ripristinarli.</p>
+      <div class="stbk"><button class="main" type="button" data-exp="1">Esporta backup</button><button class="main alt" type="button" data-imp="1">Importa backup</button></div>
+    </div>
+  </section>
+
   <section id="v-statistiche" hidden>
     <h1 class="gh sth1">Statistiche</h1>
     <div class="seg" role="group" aria-label="Periodo"><button type="button" class="on" data-stm="m">Mese</button><button type="button" data-stm="a">Anno</button></div>
@@ -71,7 +80,7 @@
     </div>
     <div class="card" style="margin-top:12px">
       <div class="dh"><div><small class="eyebrow">Stipendio netto</small><h3>Importo di ogni mese</h3></div></div>
-      <div class="sgrid" id="sed"></div>
+      <div id="sed"></div>
       <div class="sub">Inserisci l’importo di ciascun mese: viene usato in tutta l’app. I mesi senza importo tra due stipendi inseriti valgono 0 €; quelli dopo l’ultimo stipendio inserito restano vuoti.</div>
     </div>
   </section>
@@ -114,10 +123,6 @@
       <div id="cats"></div>
     </div>
   </section>
-<footer class="foot">
-    <p>I tuoi dati restano su questo dispositivo: l’app non li invia a nessun server.</p>
-    <div class="acts"><button class="mini" data-exp="1">Esporta backup</button><button class="mini" data-imp="1">Importa backup</button></div>
-  </footer>
 </main>
 </div>
 <div class="mod" id="mod" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="dh" style="align-items:center;margin-bottom:6px"><h3 id="mt"></h3><button class="mini ic" type="button" data-mclose aria-label="Chiudi">✕</button></div><div id="mbody"></div></div></div>
