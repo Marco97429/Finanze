@@ -276,7 +276,7 @@ function renderSal(){
   const pv=document.querySelector('[data-yr="-1"]');if(pv)pv.disabled=Y<=2026;
   const keys=Array.from({length:12},(_,i)=>Y+"-"+String(i+1).padStart(2,"0"));
   const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],vals=keys.map(k=>S.sals[k]!==undefined?S.sals[k]:(k>fi&&k<la?0:null)),ok=vals.filter(v=>v!==null);
-  if(!ok.length){$("sline").innerHTML='<div class="empty">Nessuno stipendio inserito per questo anno: usa i campi qui sotto.</div>';$("snote").textContent="";return}
+  if(!ok.length){$("sline").innerHTML='<div class="empty">Nessuno stipendio inserito per questo anno: usa i campi qui sotto.</div>';return}
   const mx=Math.max(...ok),step=[500,1000,2000,2500,5000,10000,20000,25000,50000,100000,200000,250000,500000,1000000,2000000,5000000,10000000].find(q=>Math.floor(mx/q)+1<=8)||10000000,top=(Math.floor(mx/step)+1)*step,n=top/step,H=Math.max(150,n*28),B=20+H;
   const X=i=>56+i*(560/11),Yy=v=>B-v/top*H;
   const fm=x=>"€"+new Intl.NumberFormat("it-IT",{maximumFractionDigits:0}).format(x);
@@ -287,7 +287,7 @@ function renderSal(){
   const dots=vals.map((v,i)=>{if(v===null)return"";const ent=S.sals[keys[i]]!==undefined;
     return `<circle cx="${X(i)}" cy="${Yy(v)}" r="${ent?5:4}" fill="${ent?"#7fd6e8":"#0b0e11"}" stroke="#7fd6e8" stroke-width="2"/>`+(ent?`<text x="${X(i)}" y="${Yy(v)-11}" text-anchor="middle" font-size="11" font-weight="600" fill="#e8fbff">${fm(v)}</text>`:"")}).join("");
   $("sline").innerHTML=`<svg viewBox="0 0 640 ${B+32}" role="img" aria-label="Andamento dello stipendio nell’anno ${Y}"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${pts[pts.length-1][0]},${B}" fill="url(#sg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round"/>${dots}${mn}</svg>`;
-  $("snote").textContent="Punto pieno: stipendio inserito per quel mese. Punto vuoto: mese senza importo tra due stipendi inseriti (0 € di default). I mesi dopo l’ultimo stipendio inserito restano vuoti."}
+}
 function updPh(){const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1];document.querySelectorAll("[data-sm]").forEach(el=>{const k=el.dataset.sm;el.placeholder=S.sals[k]===undefined&&!(k>fi&&k<la)?"–":"€"+salAt(k)})}
 function renderSalEd(){
   const Y=+$("month").value.slice(0,4);
@@ -360,9 +360,9 @@ function renderStats(){
   if(!ST.y){const n=new Date();ST.y=Math.max(2026,n.getFullYear());ST.mo=String(n.getMonth()+1).padStart(2,"0")}
   document.querySelectorAll("[data-stm]").forEach(b=>b.classList.toggle("on",b.dataset.stm===ST.mode));
   $("stmo").value=ST.mo;$("sty").value=String(ST.y);$("stmo").hidden=ST.mode!=="m";$("stmo").parentNode.classList.toggle("one",ST.mode!=="m");
-  const mo=ST.mode==="m";$("sth").textContent=mo?"Riepilogo mese":"Riepilogo anno";
+  const mo=ST.mode==="m";$("sth").textContent=mo?"Riepilogo mese":"Riepilogo anno";$("stct").textContent=mo?"Saldo mensile":"Saldo annuale";
   const D=stData(),f2=n=>eur2(n);
-  if(D.empty){$("stsum").innerHTML='<div class="empty">'+D.empty+'</div>';$("stchart").innerHTML="";$("stchip").hidden=true;$("stnote").textContent="";return}
+  if(D.empty){$("stsum").innerHTML='<div class="empty">'+D.empty+'</div>';$("stchart").innerHTML="";$("stchip").hidden=true;return}
   const net=D.sal-D.spe,tt=D.sal+D.spe,gp=tt>0?D.sal/tt*100:50;
   $("stsum").innerHTML='<div class="stc"><div><span class="stl g"><i></i>Saldo</span><b>'+f2(D.sal)+'</b></div><div class="r"><span class="stl o"><i></i>Spese</span><b>'+f2(D.spe)+'</b></div></div>'
    +'<div class="stbar"><i class="g" style="width:'+gp.toFixed(2)+'%"></i><i class="o" style="width:'+(100-gp).toFixed(2)+'%"></i></div>'
@@ -378,7 +378,7 @@ function renderStats(){
   const dots=(mo?[pts.length-1]:v.map((_,i)=>i)).map(i=>`<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="4" fill="#7fd6e8" stroke="#0b0e11" stroke-width="2"/>`).join("");
   $("stchart").innerHTML=`<svg viewBox="0 0 640 ${B+32}" role="img" aria-label="Andamento del saldo"><defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${lp[0]},${B}" fill="url(#stg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${dots}${xl}</svg>`;
   $("stchip").hidden=false;$("stchip").textContent=f2(v[v.length-1]);
-  $("stnote").textContent=mo?"Saldo giorno per giorno: parte dallo stipendio del mese e scende a ogni spesa. Le spese senza data contano dal giorno 1.":"Saldo accumulato mese dopo mese (stipendi meno spese). Il grafico si ferma all’ultimo mese con dati."}
+}
 $("stmo").addEventListener("change",e=>{ST.mo=e.target.value;renderStats()});
 $("sty").addEventListener("change",e=>{ST.y=+e.target.value;renderStats()});
 document.addEventListener("click",e=>{
