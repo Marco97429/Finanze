@@ -91,12 +91,25 @@ function openExport(){
   $("mbody").innerHTML=`<p class="mtxt">Questo testo contiene tutte le tue spese, i tuoi stipendi e i tuoi budget. Conservalo in un posto sicuro: copialo (per esempio nelle note del telefono) oppure scaricalo come file.</p><textarea id="exa" class="mta" readonly></textarea><div class="macts"><button type="button" class="mini" data-mclose>Chiudi</button><button type="button" class="mini" data-excopy="1">Copia</button><button type="button" class="main" data-exdl="1">Scarica file</button></div>`;
   $("exa").value=JSON.stringify({app:"spese-dashboard",v:1,data:S},null,1);
   $("mod").hidden=false}
+let impData=null;
 function openImport(){
-  modal={kind:"import"};
+  modal={kind:"import"};impData=null;
   $("mt").textContent="Importa backup";
-  $("mbody").innerHTML=`<p class="mtxt">Incolla il testo del backup oppure scegli il file. I dati attuali verranno sostituiti da quelli del backup.</p><textarea id="ima" class="mta" placeholder="Incolla qui il backup"></textarea><input type="file" id="imf" accept=".json,application/json" aria-label="Scegli il file di backup" style="margin-top:8px"><div class="err" id="merr" role="alert"></div><div class="macts"><button type="button" class="mini" data-mclose>Annulla</button><button type="button" class="main" data-imgo="1">Importa</button></div>`;
-  $("imf").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$("ima").value=String(r.result)};r.readAsText(f)});
-  $("mod").hidden=false;$("ima").focus()}
+  $("mbody").innerHTML=`<p class="mtxt">Scegli il file di backup (.json) salvato con “Esporta backup”. I dati attuali verranno sostituiti da quelli del backup.</p><input type="file" id="imf" accept=".json,application/json" hidden><button type="button" class="pickf" id="imp" data-pick="1"><b>Scegli file…</b><span id="imn">Nessun file selezionato</span></button><div class="err" id="merr" role="alert"></div><div class="macts"><button type="button" class="mini" data-mclose>Annulla</button><button type="button" class="main" id="imgo" data-imgo="1" disabled>Importa</button></div>`;
+  $("imf").addEventListener("change",e=>{
+    const f=e.target.files[0];impData=null;$("imgo").disabled=true;$("merr").textContent="";
+    if(!f){$("imn").textContent="Nessun file selezionato";return}
+    $("imn").textContent=f.name.length>40?f.name.slice(0,37)+"…":f.name;
+    const bad=m=>{$("merr").textContent=m;e.target.value="";$("imn").textContent="Nessun file selezionato"};
+    if(!/\.json$/i.test(f.name)){bad("Questo non è un file di backup: scegli un file .json creato con “Esporta backup”.");return}
+    if(f.size>5*1024*1024){bad("Il file è troppo grande per essere un backup.");return}
+    const r=new FileReader();
+    r.onerror=()=>bad("Non riesco a leggere il file.");
+    r.onload=()=>{let c=null;try{c=cleanImport(JSON.parse(String(r.result)))}catch(x){c=null}
+      if(!c){bad("Il file non è un backup valido di questa app.");return}
+      impData=c;$("imgo").disabled=false};
+    r.readAsText(f)});
+  $("mod").hidden=false}
 function cleanImport(d){
   if(d&&d.data)d=d.data;
   if(!d||typeof d!=="object"||!Array.isArray(d.items))return null;
@@ -106,10 +119,7 @@ function cleanImport(d){
   const sals={};if(d.sals&&typeof d.sals==="object")Object.keys(d.sals).forEach(k=>{if(ok.test(k)&&typeof d.sals[k]==="number")sals[k]=d.sals[k]});
   const lim={};if(d.lim&&typeof d.lim==="object")Object.keys(d.lim).forEach(k=>{const L=d.lim[k];if(L&&["eur","pct","rest"].includes(L.t)&&typeof L.v==="number")lim[cl(k)]=L});
   return {salary:typeof d.salary==="number"?d.salary:0,pct:{...CATS},items,rec,sals,lim,name:typeof d.name==="string"?d.name.replace(/[<>&"]/g,"").slice(0,30):"",hide:d.hide===true,order:(Array.isArray(d.order)?d.order.map(cl):[]),col:{rec:!!(d.col&&d.col.rec),exp:!!(d.col&&d.col.exp)},recSeeded:true,recSeeded2:true,limV2:d.limV2===true}}
-function doImport(){
-  let d;try{d=JSON.parse($("ima").value)}catch(e){$("merr").textContent="Il testo non è un backup valido.";return}
-  const c=cleanImport(d);if(!c){$("merr").textContent="Il backup non contiene dati riconoscibili.";return}
-  S=c;save();location.reload()}
+function doImport(){if(!impData)return;S=impData;save();location.reload()}
 function openFail(){
   if(modal&&modal.kind==="fail")return;
   modal={kind:"fail"};
@@ -208,7 +218,7 @@ function openAmount(title,label,val,max,cb){
   $("mod").hidden=false;amUpdate()}
 function amDone(){const v=am.amt?Math.min(parseFloat(am.amt.replace(",",".")),am.max):null,cb=am.cb;closeModal();cb(isNaN(v)?null:v)}
 function mLong(k){const n=new Intl.DateTimeFormat("it-IT",{month:"long",year:"numeric"}).format(new Date(+k.slice(0,4),+k.slice(5,7)-1,1));return n[0].toUpperCase()+n.slice(1)}
-function openSalAmt(k){openAmount("Stipendio di "+mLong(k).toLowerCase(),"Stipendio netto",S.sals[k],1e6,v=>{if(v===null)delete S.sals[k];else S.sals[k]=v;save();updPh();render();const el=document.querySelector('[data-sm="'+k+'"]');if(el)el.value=v===null?"":v})}
+function openSalAmt(k){openAmount("Stipendio di "+mLong(k).toLowerCase(),"Stipendio netto",S.sals[k],1e6,v=>{if(v===null)delete S.sals[k];else S.sals[k]=v;save();render();renderSalEd()})}
 function openBudAmt(c){const cur=Math.round(limOf(c,salOf($("month").value))*100)/100;openAmount("Budget "+c,"Budget mensile",cur||undefined,1e6,v=>{S.lim[c]={t:"eur",v:v===null?0:v};save();render()})}
 document.addEventListener("keydown",e=>{
   if(!modal||modal.kind!=="amount-sheet"||!am)return;
@@ -288,11 +298,17 @@ function renderSal(){
     return `<circle cx="${X(i)}" cy="${Yy(v)}" r="${ent?5:4}" fill="${ent?"#7fd6e8":"#0b0e11"}" stroke="#7fd6e8" stroke-width="2"/>`+(ent?`<text x="${X(i)}" y="${Yy(v)-11}" text-anchor="middle" font-size="11" font-weight="600" fill="#e8fbff">${fm(v)}</text>`:"")}).join("");
   $("sline").innerHTML=`<svg viewBox="0 0 640 ${B+32}" role="img" aria-label="Andamento dello stipendio nell’anno ${Y}"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${pts[pts.length-1][0]},${B}" fill="url(#sg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round"/>${dots}${mn}</svg>`;
 }
-function updPh(){const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1];document.querySelectorAll("[data-sm]").forEach(el=>{const k=el.dataset.sm;el.placeholder=S.sals[k]===undefined&&!(k>fi&&k<la)?"–":"€"+salAt(k)})}
+function updPh(){}
 function renderSalEd(){
-  const Y=+$("month").value.slice(0,4);
-  $("sed").innerHTML=Array.from({length:12},(_,i)=>{const k=Y+"-"+String(i+1).padStart(2,"0");
-    return `<label class="sm"><span>${MN.format(new Date(Y,i,1))} ${Y}</span><input type="text" readonly inputmode="none" data-sm="${k}" value="${S.sals[k]!==undefined?S.sals[k]:""}" aria-label="Stipendio netto di ${MN.format(new Date(Y,i,1))} ${Y}"></label>`}).join("");updPh()}
+  const Y=+$("month").value.slice(0,4),ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],fa=n=>Number.isInteger(n)?eur(n):eur2(n);
+  let tot=0,n=0;
+  const rows=Array.from({length:12},(_,i)=>{const k=Y+"-"+String(i+1).padStart(2,"0"),v=S.sals[k],mn=MN.format(new Date(Y,i,1)),ml=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1));
+    let cls,st,amt;
+    if(v!==undefined){cls="set";st="inserito";amt=fa(v);tot+=v;n++}
+    else if(fi&&k>fi&&k<la){cls="gap";st="automatico, vale 0 euro";amt=fa(0)}
+    else{cls="empty";st="da inserire";amt="–"}
+    return `<button type="button" class="srow ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${ml} ${Y}: ${st}, ${amt}. Tocca per modificare"><span class="sdot"></span><b>${mn}</b><span class="samt">${amt}</span></button>`}).join("");
+  $("sed").innerHTML=`<div class="ssum"><div><small>Totale ${Y}</small><b>${fa(tot)}</b></div><div class="r"><small>Mesi inseriti</small><b>${n} / 12</b></div></div><div class="slist">${rows}</div><div class="sleg"><span><i class="sdot"></i>Inserito</span><span><i class="sdot g"></i>Automatico (0 €)</span><span><i class="sdot e"></i>Da inserire</span></div>`}
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
@@ -329,7 +345,7 @@ function render(){
     const lim=limOf(c,sal),pc=sal?(lim/sal*100).toFixed(2).replace(".",",")+"% dello stipendio":"–",t=p+q,den=Math.max(lim,t,1),over=lim>0&&t>lim;
     return `<div class="cat"><div class="h"><span class="nm"><span class="mv"><button class="mini" data-mv="${c}" data-dir="-1" aria-label="Sposta ${c} su"${ix===0?" disabled":""}>▲</button><button class="mini" data-mv="${c}" data-dir="1" aria-label="Sposta ${c} giù"${ix===arr.length-1?" disabled":""}>▼</button></span>${c}</span><span class="${over?"over":""}">${eur(t)} / ${eur(lim)}</span></div><div class="t" style="background:${lim>0?"#1f9a5a":"var(--line)"}"><i style="width:${p/den*100}%;background:#e5484d"></i><i style="width:${q/den*100}%;background:#f4a09c"></i></div><div class="n"><span class="acts"><label class="bud">Budget €<input type="text" readonly inputmode="none" value="${S.lim[c].v}" data-lv="${c}" aria-label="Budget ${c} in euro"></label><b class="pc">${pc}</b></span><span>${over?"Oltre il limite di "+eur(t-lim):lim?"Restano "+eur(lim-t):""}</span></div></div>`}).join("");
 }
-function show(v){if(!$("v-"+v))return;view=v;["home","entrate","ricorrenti","spese","budget","statistiche"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="entrate"||v==="ricorrenti";document.querySelector(".foot").style.display=v==="statistiche"?"none":"";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"?"none":"";if(v==="statistiche")renderStats();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
+function show(v){if(!$("v-"+v))return;view=v;["home","entrate","ricorrenti","spese","budget","statistiche","impostazioni"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="impostazioni"||v==="entrate"||v==="ricorrenti";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"||v==="impostazioni"?"none":"";if(v==="statistiche")renderStats();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
 $("f").addEventListener("submit",e=>{e.preventDefault();
@@ -392,7 +408,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.ncedit)$("nchips").hidden=!$("nchips").hidden;
   if(t.dataset.nc&&ne){ne.cat=t.dataset.nc;ne.manual=true;ne.sug=false;$("nchips").hidden=true;neUpdate()}
   if(t.dataset.nsave&&ne)neSave();
-  if(t.dataset.sm!==undefined&&t.tagName==="INPUT")openSalAmt(t.dataset.sm);
+  if(t.dataset.sm!==undefined)openSalAmt(t.dataset.sm);
   if(t.dataset.lv!==undefined&&t.tagName==="INPUT")openBudAmt(t.dataset.lv);
   if(t.dataset.ak&&am)amPress(t.dataset.ak);
   if(t.dataset.amok&&am)amDone();
@@ -407,6 +423,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.excopy){const ta=$("exa");ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}t.textContent=ok?"Copiato":"Copia a mano"}
   if(t.dataset.exdl){const b=new Blob([$("exa").value],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="spese-backup-"+mk(new Date())+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
   if(t.dataset.imgo)doImport();
+  if(t.dataset.pick&&$("imf"))$("imf").click();
   if(t.dataset.col){S.col=S.col||{};S.col[t.dataset.col]=!S.col[t.dataset.col];save();applyCol()}
   if(t.dataset.new)openNewExp(t.dataset.new==="rec");
   if(t.dataset.redit)openModal("edit-rec",t.dataset.redit);
