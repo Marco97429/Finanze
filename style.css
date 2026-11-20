@@ -359,4 +359,4 @@ body{touch-action:manipulation}
 .seamt small{font-size:11px;color:var(--mute);text-align:center;line-height:1.2}.seamt b{font:700 20px/1.2 var(--fh,inherit)}
 .seamt.empty{border-style:dashed;border-color:var(--line);background:rgba(255,255,255,.035)}.seamt.empty b,.seamt.gap b{color:var(--mute)}
 .seamt:active{transform:scale(.98)}
-html.hl,html.hl body{overflow:hidden;height:100%;overscroll-behavior:none}html.hl #sb{display:none!important}
+html.hl,html.hl body{overflow:hidden;height:100%;overscroll-behavior:none}.app{box-sizing:border-box}html.hl #sb{display:none!important}
