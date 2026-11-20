@@ -306,7 +306,6 @@ function renderSalEd(){
   const n=Object.keys(S.sals).filter(k=>k.slice(0,4)===String(Y)&&S.sals[k]!==undefined).length;
   const k=Y+"-"+SEm,v=S.sals[k];let cls,amt,cap;
   if(v!==undefined){cls="set";amt=fa(v);cap="Importo"}
-  else if(fi&&k>fi&&k<la){cls="gap";amt=fa(0);cap="Automatico · tocca per inserire"}
   else{cls="empty";amt="–";cap="Tocca per inserire"}
   const opts=Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,"0"),t=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1));return `<option value="${m}"${m===SEm?" selected":""}>${t[0].toUpperCase()+t.slice(1)}</option>`}).join("");
   $("semini").innerHTML=`<small>Mesi inseriti</small><b>${n} / 12</b>`;
