@@ -360,4 +360,4 @@ body{touch-action:manipulation}
 .seamt.empty{border-style:dashed;border-color:var(--line);background:rgba(255,255,255,.035)}.seamt.empty b,.seamt.gap b{color:var(--mute)}
 .seamt:active{transform:scale(.98)}
 html.hl,html.hl body{overflow:hidden;height:100%;overscroll-behavior:none}.app{box-sizing:border-box}html.hl #sb{display:none!important}
-.dh.wy{flex-wrap:wrap;align-items:center;gap:10px}.dh.wy .eyebrow.t2{flex:1 1 100%;padding-right:0;white-space:nowrap}
+.dh.wy{flex-wrap:wrap;align-items:center;gap:8px}.dh.wy .eyebrow.t2{flex:1 1 auto;padding-right:0;white-space:nowrap}.dh.wy .acts{margin-left:auto;gap:6px}.dh.wy .acts{gap:5px}.dh.wy .mini{min-width:24px;padding-left:5px;padding-right:5px}.dh.wy .mchip{padding-left:8px;padding-right:8px}
