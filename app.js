@@ -281,7 +281,7 @@ function salAt(k){const v=S.sals[k];return v===undefined?0:v}
 function syncSal(){$("salary").value=salOf($("month").value)||""}
 syncSal();
 $("mchip").innerHTML=Array.from({length:12},(_,i)=>{const n=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1));return `<option value="${String(i+1).padStart(2,"0")}">${n[0].toUpperCase()+n.slice(1)}</option>`}).join("");
-function renderSal(){
+function renderSal(){setTimeout(lockHome,0);
   const Y=+$("month").value.slice(0,4);$("yrchip").textContent=Y;
   const pv=document.querySelector('[data-yr="-1"]');if(pv)pv.disabled=Y<=2026;
   const keys=Array.from({length:12},(_,i)=>Y+"-"+String(i+1).padStart(2,"0"));
@@ -348,8 +348,8 @@ function render(){
     const lim=limOf(c,sal),pc=sal?(lim/sal*100).toFixed(2).replace(".",",")+"% dello stipendio":"–",t=p+q,den=Math.max(lim,t,1),over=lim>0&&t>lim;
     return `<div class="cat"><div class="h"><span class="nm"><span class="mv"><button class="mini" data-mv="${c}" data-dir="-1" aria-label="Sposta ${c} su"${ix===0?" disabled":""}>▲</button><button class="mini" data-mv="${c}" data-dir="1" aria-label="Sposta ${c} giù"${ix===arr.length-1?" disabled":""}>▼</button></span>${c}</span><span class="${over?"over":""}">${eur(t)} / ${eur(lim)}</span></div><div class="t" style="background:${lim>0?"#1f9a5a":"var(--line)"}"><i style="width:${p/den*100}%;background:#e5484d"></i><i style="width:${q/den*100}%;background:#f4a09c"></i></div><div class="n"><span class="acts"><label class="bud">Budget €<input type="text" readonly inputmode="none" value="${S.lim[c].v}" data-lv="${c}" aria-label="Budget ${c} in euro"></label><b class="pc">${pc}</b></span><span>${over?"Oltre il limite di "+eur(t-lim):lim?"Restano "+eur(lim-t):""}</span></div></div>`}).join("");
 }
-function lockHome(){const r=document.documentElement;r.classList.remove("hl");if(view!=="home")return;
-  scrollTo(0,0);const last=$("v-home").lastElementChild,nav=document.querySelector(".hdr");if(!last||!nav)return;
+function lockHome(){const r=document.documentElement;r.classList.remove("hl");if(view!=="home"&&view!=="entrate"&&view!=="statistiche")return;
+  scrollTo(0,0);const last=$("v-"+view).lastElementChild,nav=document.querySelector(".hdr");if(!last||!nav)return;
   if(last.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top-8)r.classList.add("hl")}
 addEventListener("resize",()=>{lockHome();if(view==="entrate")renderSal()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(lockHome,100));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>lockHome());
@@ -380,7 +380,7 @@ function stData(){
   let b=0;const vals=[];for(let i=0;i<=last;i++){b+=mv[i];vals.push(cap(b))}
   return{sal,spe,vals,slots:12,labels:keys.map((k,i)=>[i,MN.format(new Date(ST.y,i,1))])};
 }
-function renderStats(){
+function renderStats(){setTimeout(lockHome,0);
   if(!ST.y){const n=new Date();ST.y=Math.max(2026,n.getFullYear());ST.mo=String(n.getMonth()+1).padStart(2,"0")}
   document.querySelectorAll("[data-stm]").forEach(b=>b.classList.toggle("on",b.dataset.stm===ST.mode));
   $("stmo").value=ST.mo;$("sty").value=String(ST.y);$("stmo").hidden=ST.mode!=="m";$("stmo").parentNode.classList.toggle("one",ST.mode!=="m");
