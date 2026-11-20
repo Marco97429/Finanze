@@ -299,16 +299,19 @@ function renderSal(){
   $("sline").innerHTML=`<svg viewBox="0 0 640 ${B+32}" role="img" aria-label="Andamento dello stipendio nell’anno ${Y}"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${pts[pts.length-1][0]},${B}" fill="url(#sg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round"/>${dots}${mn}</svg>`;
 }
 function updPh(){}
+let SEm="";
 function renderSalEd(){
-  const Y=+$("month").value.slice(0,4),ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],fa=n=>Number.isInteger(n)?eur(n):eur2(n);
-  let tot=0,n=0;
-  const rows=Array.from({length:12},(_,i)=>{const k=Y+"-"+String(i+1).padStart(2,"0"),v=S.sals[k],mn=MN.format(new Date(Y,i,1)),ml=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1));
-    let cls,st,amt;
-    if(v!==undefined){cls="set";st="inserito";amt=fa(v);tot+=v;n++}
-    else if(fi&&k>fi&&k<la){cls="gap";st="automatico, vale 0 euro";amt=fa(0)}
-    else{cls="empty";st="da inserire";amt="–"}
-    return `<button type="button" class="srow ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${ml} ${Y}: ${st}, ${amt}. Tocca per modificare"><span class="sdot"></span><b>${mn}</b><span class="samt">${amt}</span></button>`}).join("");
-  $("sed").innerHTML=`<div class="ssum"><div><small>Totale ${Y}</small><b>${fa(tot)}</b></div><div class="r"><small>Mesi inseriti</small><b>${n} / 12</b></div></div><div class="slist">${rows}</div><div class="sleg"><span><i class="sdot"></i>Inserito</span><span><i class="sdot g"></i>Automatico (0 €)</span><span><i class="sdot e"></i>Da inserire</span></div>`}
+  const Y=+$("month").value.slice(0,4);if(!SEm)SEm=$("month").value.slice(5,7);
+  const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],fa=n=>Number.isInteger(n)?eur(n):eur2(n);
+  const n=Object.keys(S.sals).filter(k=>k.slice(0,4)===String(Y)&&S.sals[k]!==undefined).length;
+  const k=Y+"-"+SEm,v=S.sals[k];let cls,amt,cap;
+  if(v!==undefined){cls="set";amt=fa(v);cap="Importo"}
+  else if(fi&&k>fi&&k<la){cls="gap";amt=fa(0);cap="Automatico · tocca per inserire"}
+  else{cls="empty";amt="–";cap="Tocca per inserire"}
+  const opts=Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,"0"),t=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1));return `<option value="${m}"${m===SEm?" selected":""}>${t[0].toUpperCase()+t.slice(1)}</option>`}).join("");
+  $("semini").innerHTML=`<small>Mesi inseriti</small><b>${n} / 12</b>`;
+  $("sed").innerHTML=`<div class="sesel"><select class="mchip" id="semo" aria-label="Mese">${opts}</select><button type="button" class="seamt ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${mLong(k).toLowerCase()}: ${amt}. Tocca per modificare"><small>${cap}</small><b>${amt}</b></button></div>`}
+document.addEventListener("change",e=>{if(e.target.id==="semo"){SEm=e.target.value;renderSalEd()}});
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
