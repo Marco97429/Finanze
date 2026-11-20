@@ -288,15 +288,15 @@ function renderSal(){
   const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],vals=keys.map(k=>S.sals[k]!==undefined?S.sals[k]:(k>fi&&k<la?0:null)),ok=vals.filter(v=>v!==null);
   if(!ok.length){$("sline").innerHTML='<div class="empty">Nessuno stipendio inserito per questo anno: usa i campi qui sotto.</div>';return}
   const mx=Math.max(...ok),step=[500,1000,2000,2500,5000,10000,20000,25000,50000,100000,200000,250000,500000,1000000,2000000,5000000,10000000].find(q=>Math.floor(mx/q)+1<=8)||10000000,top=(Math.floor(mx/step)+1)*step,n=top/step,H=Math.max(150,n*28),B=20+H;
-  const X=i=>56+i*(560/11),Yy=v=>B-v/top*H;
+  const W=Math.max(260,Math.round($("sline").clientWidth||document.documentElement.clientWidth-84)),L=W<420?46:56,R=W<420?10:20,sp=(W-L-R)/11,fs=W<420?10:11,X=i=>L+i*sp,Yy=v=>B-v/top*H;
   const fm=x=>"€"+new Intl.NumberFormat("it-IT",{maximumFractionDigits:0}).format(x);
   const pts=vals.map((v,i)=>v===null?null:[X(i),Yy(v)]).filter(Boolean);
   const ln=pts.map(q=>q.join(",")).join(" ");
-  let g="";for(let j=0;j<=n;j++){const y=B-j*H/n;g+=`<line x1="56" x2="620" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)"/><text x="48" y="${y+4}" text-anchor="end" font-size="11" fill="#9aa6ad">${fm(j*step)}</text>`}
-  const mn=keys.map((k,i)=>`<text x="${X(i)}" y="${B+22}" text-anchor="middle" font-size="11" fill="#9aa6ad">${MN.format(new Date(Y,i,1))}</text>`).join("");
+  let g="";for(let j=0;j<=n;j++){const y=B-j*H/n;g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)"/><text x="${L-6}" y="${y+4}" text-anchor="end" font-size="${fs}" fill="#9aa6ad">${fm(j*step)}</text>`}
+  const mn=keys.map((k,i)=>`<text x="${X(i)}" y="${B+22}" text-anchor="middle" font-size="${sp<26?9.5:fs}" fill="#9aa6ad">${sp<19?MN.format(new Date(Y,i,1))[0].toUpperCase():MN.format(new Date(Y,i,1))}</text>`).join("");
   const dots=vals.map((v,i)=>{if(v===null)return"";const ent=S.sals[keys[i]]!==undefined;
-    return `<circle cx="${X(i)}" cy="${Yy(v)}" r="${ent?5:4}" fill="${ent?"#7fd6e8":"#0b0e11"}" stroke="#7fd6e8" stroke-width="2"/>`+(ent?`<text x="${X(i)}" y="${Yy(v)-11}" text-anchor="middle" font-size="11" font-weight="600" fill="#e8fbff">${fm(v)}</text>`:"")}).join("");
-  $("sline").innerHTML=`<svg viewBox="0 0 640 ${B+32}" role="img" aria-label="Andamento dello stipendio nell’anno ${Y}"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${pts[pts.length-1][0]},${B}" fill="url(#sg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round"/>${dots}${mn}</svg>`;
+    return `<circle cx="${X(i)}" cy="${Yy(v)}" r="${ent?5:4}" fill="${ent?"#7fd6e8":"#0b0e11"}" stroke="#7fd6e8" stroke-width="2"/>`+(ent&&sp>=34?`<text x="${X(i)}" y="${Yy(v)-11}" text-anchor="middle" font-size="11" font-weight="600" fill="#e8fbff">${fm(v)}</text>`:"")}).join("");
+  $("sline").innerHTML=`<svg viewBox="0 0 ${W} ${B+32}" role="img" aria-label="Andamento dello stipendio nell’anno ${Y}"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${pts[pts.length-1][0]},${B}" fill="url(#sg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round"/>${dots}${mn}</svg>`;
 }
 function updPh(){}
 let SEm="";
@@ -351,9 +351,9 @@ function render(){
 function lockHome(){const r=document.documentElement;r.classList.remove("hl");if(view!=="home")return;
   scrollTo(0,0);const last=$("v-home").lastElementChild,nav=document.querySelector(".hdr");if(!last||!nav)return;
   if(last.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top-8)r.classList.add("hl")}
-addEventListener("resize",lockHome);addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(lockHome,100));
+addEventListener("resize",()=>{lockHome();if(view==="entrate")renderSal()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(lockHome,100));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>lockHome());
-function show(v){if(!$("v-"+v))return;view=v;setTimeout(lockHome,0);["home","entrate","ricorrenti","spese","budget","statistiche","impostazioni"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="impostazioni"||v==="entrate"||v==="ricorrenti";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"||v==="impostazioni"?"none":"";if(v==="statistiche")renderStats();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
+function show(v){if(!$("v-"+v))return;view=v;setTimeout(lockHome,0);["home","entrate","ricorrenti","spese","budget","statistiche","impostazioni"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="impostazioni"||v==="entrate"||v==="ricorrenti";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"||v==="impostazioni"?"none":"";if(v==="statistiche")renderStats();if(v==="entrate")renderSal();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
 $("f").addEventListener("submit",e=>{e.preventDefault();
