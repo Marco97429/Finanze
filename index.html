@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="theme-color" content="#07090c">
+<meta name="description" content="Le mie finanze: spese mensili, stipendio e budget. I dati restano sul tuo dispositivo.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finanze">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Le mie finanze</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+<header class="hdr">
+  <nav aria-label="Sezioni">
+    <button type="button" class="on" data-view="home" aria-label="Home" aria-current="page"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 3 10.6c-.4.3-.1 1 .4 1H5v7.4c0 .6.4 1 1 1h3.5v-5.5h5V20H18c.6 0 1-.4 1-1v-7.4h1.6c.5 0 .8-.7.4-1z"/></svg><span>Home</span></button>
+    <button type="button" data-view="statistiche" aria-label="Statistiche"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10H12z"/><path d="M14 2.2V10h7.8A10 10 0 0 0 14 2.2z"/></svg><span>Statistiche</span></button>
+    <button type="button" data-view="x-cal" aria-label="Calendario"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2zM5 9v10h14V9zm2 2h3v3H7z"/></svg><span>Calendario</span></button>
+    <button type="button" data-view="x-trans" aria-label="Transazioni"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm3 4v2h10V8zm0 4v2h10v-2zm0 4v1.5h6V16z"/></svg><span>Transazioni</span></button>
+    <button type="button" data-view="impostazioni" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.4h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>Impostazioni</span></button>
+  </nav>
+</header>
+<main>
+  <div class="greet" id="greet"><div><h1 class="gh" id="tpgh"></h1><p class="gs">Il tuo mese finanziario</p></div><button class="bell" id="tpbell" type="button" data-bell="1" aria-label="Notifiche"><span class="bdg" id="tpbdg" hidden></span></button></div>
+  <div class="mrow" id="mrow"><div class="shd" id="pill" hidden><label class="smini syr"><small>Mese</small><select id="pmo" data-mo="1" aria-label="Mese visualizzato"></select></label><label class="smini syr"><small>Anno</small><select id="pyr" aria-label="Anno visualizzato"></select></label></div>
+  <div class="top">
+    <input type="month" id="month" hidden>
+    <input type="number" id="salary" hidden>
+  </div></div>
+
+  <section id="v-home">
+    <div class="card tpc">
+      <div class="tpr"><span class="tpic" id="tpic"></span><div class="tpt"><small>Saldo totale</small><b id="tpbal"></b></div><button class="eye" id="tpeye" type="button" data-eye="1"></button></div>
+      <hr class="tpdv">
+      <div class="tph"><span><span id="tphs"></span>Disponibile questo mese</span><span class="tpbd" id="tpbd"></span></div>
+      <div class="tpbig" id="tpav"></div>
+      <div class="tpl"><span>Limite mensile</span><span class="tpchip" id="tplim"></span></div>
+      <div class="tpbar"><i id="tpfill"></i></div>
+      <div class="tpst" id="tpst"></div>
+    </div>
+    <div class="card rmv">
+      <h2>Registra movimento</h2>
+      <div class="rmg">
+        <button type="button" class="rmt in" data-view="entrate"><span class="rmc" id="rmin"></span><b>Entrate</b></button>
+        <button type="button" class="rmt out" data-view="spese"><span class="rmc" id="rmout"></span><b>Spese</b></button>
+      </div>
+      <button type="button" class="rmr" data-view="ricorrenti"><span class="rmc rec" id="rmrec"></span><b>Ricorrenti</b><span class="rmch" id="rmch"></span></button>
+    </div>
+  </section>
+
+  <section id="v-impostazioni" hidden>
+    <h1 class="gh sth1">Impostazioni</h1>
+    <div class="card">
+      <h2 class="sth2">Backup dei dati</h2>
+      <p class="sub" style="margin:0 0 16px">I tuoi dati restano su questo dispositivo: l’app non li invia a nessun server. Esporta un backup per conservarli o trasferirli, e importalo per ripristinarli.</p>
+      <div class="stbk"><button class="main" type="button" data-exp="1">Esporta backup</button><button class="main alt" type="button" data-imp="1">Importa backup</button></div>
+    </div>
+  </section>
+
+  <section id="v-statistiche" hidden>
+    <h1 class="gh sth1">Statistiche</h1>
+    <div class="seg" role="group" aria-label="Periodo"><button type="button" class="on" data-stm="m">Mese</button><button type="button" data-stm="a">Anno</button></div>
+    <div class="stsel"><select class="mchip" id="stmo" aria-label="Mese"></select><select class="mchip" id="sty" aria-label="Anno"></select></div>
+    <div class="card"><h2 class="sth2" id="sth"></h2><div id="stsum"></div></div>
+    <div class="card" style="margin-top:12px"><div class="dh" style="align-items:center;margin-bottom:6px"><h2 class="sth2" style="margin:0" id="stct">Saldo mensile</h2><span class="mchip" id="stchip"></span></div><div id="stchart"></div></div>
+    <div class="card" style="margin-top:12px"><div class="dh" style="align-items:center;margin-bottom:6px"><h2 class="sth2" style="margin:0">Andamento stipendio</h2></div><div id="sline"></div></div>
+    <div class="two">
+      <div class="card dist">
+        <div class="dh" style="align-items:center;margin-bottom:6px"><h2 style="margin:0">Spese per categoria</h2></div>
+        <div class="dbody"><div class="donut" id="donut"><div class="hole" id="hole"></div></div><ul class="dl" id="lg"></ul></div>
+      </div>
+      <div class="card"><h2>Spese degli ultimi 6 mesi</h2><div id="bars"></div></div>
+    </div>
+  </section>
+
+  <section id="v-entrate" hidden>
+    <h1 class="gh sth1">Stipendio</h1>
+    <div class="card">
+      <div class="dh" style="align-items:center"><small class="eyebrow t2">Inserisci importo</small><div class="shd"><div class="smini" id="semini"></div><label class="smini syr"><small>Anno</small><select id="syr" aria-label="Anno di visualizzazione"></select></label></div></div>
+      <div id="sed"></div>
+      <div class="sub">Inserisci l’importo dello stipendio per ogni mese. I mesi senza importo inserito valgono 0&nbsp;€.</div>
+    </div>
+  </section>
+
+  <section id="v-ricorrenti" hidden>
+    <h1 class="gh sth1">Entrate / Uscite Ricorrenti</h1>
+    <div class="rbar" id="rbar"></div>
+    <div class="card">
+      <div class="dh" style="align-items:center"><small class="eyebrow rt">Movimenti ricorrenti</small><button class="new" data-new="rec" type="button">NUOVO MOVIMENTO</button></div>
+      <div class="rsec"><span>Entrate</span></div>
+      <ul id="rinc"></ul>
+      <div class="rsec"><span>Spese <span class="cnt" id="rcnt2"></span></span></div>
+      <ul id="rec2"></ul>
+    </div>
+  </section>
+
+  <section id="v-spese" hidden>
+    <h1 class="gh sth1">Spese Mensili</h1>
+    <div class="card">
+      <div class="dh" style="align-items:center;margin-bottom:8px"><h2 style="margin:0">Aggiungi una nuova spesa</h2><div class="hbtns"><button class="new" data-new="exp" type="button">NUOVA SPESA</button></div></div>
+      <form id="f" hidden>
+        <input id="d" placeholder="Descrizione (es. Affitto)" required class="full" aria-label="Descrizione">
+        <input id="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo €" required aria-label="Importo">
+        <select id="c" aria-label="Categoria"></select>
+        <select id="s" aria-label="Stato"><option value="paid">Pagata</option><option value="plan">Preventivata</option></select>
+        <button class="main" type="submit">Aggiungi spesa</button>
+      </form>
+      <ul id="list"></ul>
+    </div>
+  </section>
+
+  <section id="v-budget" hidden>
+    <div class="card">
+      <h2>Budget per categoria</h2>
+      <p class="sub" style="margin:0 0 6px">Imposta il budget in euro di ogni categoria: la percentuale si calcola da sola come budget ÷ stipendio netto × 100.</p>
+      <div id="cats"></div>
+    </div>
+  </section>
+</main>
+</div>
+<div class="mod" id="mod" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="dh" style="align-items:center;margin-bottom:6px"><h3 id="mt"></h3><button class="mini ic" type="button" data-mclose aria-label="Chiudi">✕</button></div><div id="mbody"></div></div></div>
+<div id="sb" hidden aria-hidden="true"><div id="sbt"></div></div>
+<script src="app.js"></script>
+</body>
+</html>
