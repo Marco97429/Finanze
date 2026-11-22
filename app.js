@@ -201,18 +201,21 @@ function neSave(){
   const d=cap($("nd").value.trim()),a=neVal();if(!d||!(a>0))return;
   if(ne.rec){const from=$("nfrom").value,to=$("nto").value;if(to&&to<from)return;S.rec.push({id:"r"+Date.now(),d,a,c:ne.cat,from,to});S.lastCat=ne.cat;ensureRec();save();closeModal();render();return}
   const dt=neDate(),m=dt.slice(0,7);
+  if(ne.edit!==null){const it=S.items.find(i=>i.id==ne.edit);if(it)Object.assign(it,{m,dt,d,a,c:ne.cat});S.lastCat=ne.cat;save();closeModal();render();return}
   S.items.push({id:Date.now(),m,dt,d,a,c:ne.cat,s:ne.st});
   S.lastCat=ne.cat;
   if(m!==$("month").value){$("month").value=m;syncSal();ensureRec()}
   save();closeModal();render()}
-function openNewExp(rec){
+function openNewExp(rec,editId){
   const cur=mk(new Date()),vm=$("month").value;
-  ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0],sug:false,manual:false,st:"paid",dm:"pick",rec:!!rec};
+  ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0],sug:false,manual:false,st:"paid",dm:"pick",rec:!!rec,edit:null};
+  const eIt=editId!==undefined&&editId!==null?S.items.find(i=>i.id==editId):null;
+  if(eIt){ne.edit=eIt.id;ne.amt=String(eIt.a).replace(".",",");ne.cat=CATS[eIt.c]!==undefined?eIt.c:ne.cat;ne.manual=true;ne.st=eIt.s||"paid"}
   modal={kind:"new-exp-sheet"};
   document.querySelector(".mbox").classList.add("sheet");
-  $("mt").textContent=rec?"Nuova spesa ricorrente":"";document.querySelector(".mbox").setAttribute("aria-label","Nuova spesa");
-  $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="ncat ndate"><span class="nci">${IC_CLOCK}</span><div class="nct"><small>Scegli data:</small><b class="ndsum" id="ndsum" role="button" tabindex="0" aria-label="Modifica la data della spesa"></b><div class="dw" id="ndw" role="group" aria-label="Data della spesa" hidden><div class="dwsel"></div><div class="dwcol" data-w="d" role="listbox" aria-label="Giorno" tabindex="0"></div><div class="dwcol" data-w="m" role="listbox" aria-label="Mese" tabindex="0"></div><div class="dwcol" data-w="y" role="listbox" aria-label="Anno" tabindex="0"></div></div></div></div><input type="hidden" id="ndd">`}<div class="ncwrap"><div class="ncat" data-ncedit="1" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Cambia categoria"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><span class="ncc">${IC_DN}</span></div><div class="nchips" id="nchips" role="listbox" hidden>${ord().map(c=>`<button type="button" role="option" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div></div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button></div>`;
-  if(rec)$("nfrom").value=cur;else $("ndd").value=vm===cur?NYMD(new Date()):(vm<"2026-01"?"2026-01":vm)+"-01";
+  $("mt").textContent=rec?"Nuova spesa ricorrente":eIt?"Modifica spesa":"Nuova spesa";document.querySelector(".mbox").setAttribute("aria-label",eIt?"Modifica spesa":"Nuova spesa");
+  $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="ncat ndate"><span class="nci">${IC_CLOCK}</span><div class="nct"><small>Scegli data:</small><b class="ndsum" id="ndsum" role="button" tabindex="0" aria-label="Modifica la data della spesa"></b><div class="dw" id="ndw" role="group" aria-label="Data della spesa" hidden><div class="dwsel"></div><div class="dwcol" data-w="d" role="listbox" aria-label="Giorno" tabindex="0"></div><div class="dwcol" data-w="m" role="listbox" aria-label="Mese" tabindex="0"></div><div class="dwcol" data-w="y" role="listbox" aria-label="Anno" tabindex="0"></div></div></div></div><input type="hidden" id="ndd">`}<div class="ncwrap"><div class="ncat" data-ncedit="1" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Cambia categoria"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><span class="ncc">${IC_DN}</span></div><div class="nchips" id="nchips" role="listbox" hidden>${ord().map(c=>`<button type="button" role="option" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div></div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div>${eIt?`<div class="neacts"><button type="button" class="nbt" data-mclose>Annulla</button><button type="button" class="nbt danger" data-nedel="1">Elimina spesa</button><button type="button" class="nbt main" id="nsave" data-nsave="1" disabled>Salva modifiche</button></div>`:`<button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button>`}</div>`;
+  if(rec)$("nfrom").value=cur;else if(eIt){$("ndd").value=eIt.dt||(eIt.m+"-01");$("nd").value=eIt.d}else $("ndd").value=vm===cur?NYMD(new Date()):(vm<"2026-01"?"2026-01":vm)+"-01";
   $("nd").addEventListener("input",neDesc);if(rec){$("nfrom").addEventListener("change",neUpdate);$("nto").addEventListener("change",neUpdate)}else $("ndd").addEventListener("input",neUpdate);
   $("mod").hidden=false;neUpdate();
   if(!matchMedia("(pointer:coarse)").matches)$("nd").focus()}
@@ -340,7 +343,7 @@ function fitSal(){
   const avail=nav.getBoundingClientRect().top-18-c.top-other;
   const rh=Math.max(26,Math.min(44,Math.floor((avail-11*gap)/12)));
   g.style.setProperty("--rh",rh+"px");setTimeout(lockHome,0)}
-document.addEventListener("change",e=>{if(e.target.id==="syr"){const mm=$("month").value.slice(5,7);$("month").value=e.target.value+"-"+mm;syncSal();ensureRec();render();renderSalEd()}});
+document.addEventListener("change",e=>{if(e.target.id==="syr"||e.target.id==="pyr"){const mm=$("month").value.slice(5,7);$("month").value=e.target.value+"-"+mm;syncSal();ensureRec();render();renderSalEd()}});
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
@@ -364,7 +367,7 @@ function render(){
   const pf=n=>sal?(n/sal*100).toFixed(1).replace(".",",")+"% delle entrate":"Imposta lo stipendio in Entrate reali";
   
   
-  $("pill").innerHTML=Array.from({length:12},(_,i)=>new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1)).toUpperCase()+" "+m.slice(0,4)).map((t,i)=>`<option value="${String(i+1).padStart(2,"0")}">${t}</option>`).join("");$("pill").value=m.slice(5,7);
+  $("pmo").innerHTML=Array.from({length:12},(_,i)=>cap(new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1)))).map((t,i)=>`<option value="${String(i+1).padStart(2,"0")}">${t}</option>`).join("");$("pmo").value=m.slice(5,7);$("pyr").innerHTML=Array.from({length:10},(_,i)=>`<option value="${2026+i}">${2026+i}</option>`).join("");$("pyr").value=m.slice(0,4);
   
 
 
@@ -453,7 +456,7 @@ document.addEventListener("click",e=>{
   if(e.target.closest&&e.target.closest("#ndsum")){wOpen();ncClose()}else if(modal&&modal.kind==="new-exp-sheet"&&$("ndw")&&!$("ndw").hidden&&!e.target.closest("#ndw"))wClose();
   if(modal&&modal.kind==="new-exp-sheet"&&$("nchips")){if(e.target.closest&&e.target.closest(".ncat[data-ncedit]")){const o=$("nchips").hidden;if(o)wClose();$("nchips").hidden=!o;document.querySelector(".ncat[data-ncedit]").setAttribute("aria-expanded",o)}else if(!e.target.closest(".nchips"))ncClose()}
   const t=e.target.closest?(e.target.closest("button,[data-view]")||e.target):e.target;
-  if(!e.target.closest("button,input,select,a")){const xr=e.target.closest("li[data-rowedit]");if(xr){openModal("edit-exp",xr.dataset.rowedit);return}}
+  if(!e.target.closest("button,input,select,a")){const xr=e.target.closest("li[data-rowedit]");if(xr){openNewExp(false,xr.dataset.rowedit);return}}
   if(t.dataset.view)show(t.dataset.view);
   if(t.dataset.stm){ST.mode=t.dataset.stm;renderStats()}
   if(t.dataset.tg2)setExpOpen($("f").hidden);
@@ -485,7 +488,8 @@ document.addEventListener("click",e=>{
   if(t.dataset.yr){const [yy,mm]=$("month").value.split("-"),ny=+yy+parseInt(t.dataset.yr);if(ny>=2026){$("month").value=ny+"-"+mm;syncSal();ensureRec();render();renderSalEd()}}
   if(t.dataset.mv){const o=ord(),i=o.indexOf(t.dataset.mv),j=i+parseInt(t.dataset.dir);if(j>=0&&j<o.length){[o[i],o[j]]=[o[j],o[i]];S.order=o;save();render()}}
   if(t.dataset.cg){cgOpen[t.dataset.cg]=!cgOpen[t.dataset.cg];render();lockHome()}
-  if(t.dataset.edit)openModal("edit-exp",t.dataset.edit);
+  if(t.dataset.edit)openNewExp(false,t.dataset.edit);
+  if(t.dataset.nedel&&ne&&ne.edit!==null)openConfirm("del-exp",ne.edit);
   if(t.dataset.mreq&&modal&&modal.kind==="edit-exp"){openConfirm("del-exp",modal.id)}
   if(t.dataset.cancel){editId=null;render()}
   if(t.dataset.save){const li=t.closest("li"),it=S.items.find(i=>i.id==t.dataset.save);const v=k=>li.querySelector('[data-f="'+k+'"]').value;const a=parseFloat(v("a"));if(it&&v("d").trim()&&a>=0){it.d=cap(v("d").trim());it.a=a;it.c=v("c");editId=null;save();render()}}
