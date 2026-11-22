@@ -306,9 +306,12 @@ function renderSalEd(){
 function fitSal(){
   const g=document.querySelector(".smg"),card=g&&g.closest(".card"),nav=document.querySelector(".hdr nav");if(!g||!card||!nav||$("v-entrate").hidden)return;
   const gap=4,r=g.getBoundingClientRect(),c=card.getBoundingClientRect();
+  const tt=card.querySelector(".eyebrow.t2");
+  if(tt){tt.style.cssText="font-size:16px;letter-spacing:.04em;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:clip";
+    let fs=16;while(fs>11&&tt.scrollWidth>tt.clientWidth+0.5){fs-=.25;tt.style.fontSize=fs+"px"}}
   g.style.setProperty("--gap",gap+"px");g.style.setProperty("--rh","40px");
   const other=card.getBoundingClientRect().height-g.getBoundingClientRect().height;
-  const avail=nav.getBoundingClientRect().top-8-c.top-other;
+  const avail=nav.getBoundingClientRect().top-18-c.top-other;
   const rh=Math.max(26,Math.min(44,Math.floor((avail-11*gap)/12)));
   g.style.setProperty("--rh",rh+"px");setTimeout(lockHome,0)}
 document.addEventListener("change",e=>{if(e.target.id==="syr"){const mm=$("month").value.slice(5,7);$("month").value=e.target.value+"-"+mm;syncSal();ensureRec();render();renderSalEd()}});
