@@ -302,7 +302,15 @@ function renderSalEd(){
   $("sed").innerHTML='<div class="smg">'+Array.from({length:12},(_,i)=>{
     const k=Y+"-"+String(i+1).padStart(2,"0"),v=S.sals[k],t=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1)),nm=t[0].toUpperCase()+t.slice(1);
     const cls=v!==undefined?"set":"empty",amt=v!==undefined?fa(v):"Tocca per inserire";
-    return `<div class="smr"><div class="smm">${nm}</div><button type="button" class="smt ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${nm.toLowerCase()} ${Y}: ${v!==undefined?amt:"non inserito"}. Tocca per modificare">${amt}</button></div>`}).join("")+"</div>"}
+    return `<div class="smr"><div class="smm">${nm}</div><button type="button" class="smt ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${nm.toLowerCase()} ${Y}: ${v!==undefined?amt:"non inserito"}. Tocca per modificare">${amt}</button></div>`}).join("")+"</div>";fitSal()}
+function fitSal(){
+  const g=document.querySelector(".smg"),card=g&&g.closest(".card"),nav=document.querySelector(".hdr nav");if(!g||!card||!nav||$("v-entrate").hidden)return;
+  const gap=4,r=g.getBoundingClientRect(),c=card.getBoundingClientRect();
+  g.style.setProperty("--gap",gap+"px");g.style.setProperty("--rh","40px");
+  const other=card.getBoundingClientRect().height-g.getBoundingClientRect().height;
+  const avail=nav.getBoundingClientRect().top-8-c.top-other;
+  const rh=Math.max(26,Math.min(44,Math.floor((avail-11*gap)/12)));
+  g.style.setProperty("--rh",rh+"px");setTimeout(lockHome,0)}
 document.addEventListener("change",e=>{if(e.target.id==="syr"){const mm=$("month").value.slice(5,7);$("month").value=e.target.value+"-"+mm;syncSal();ensureRec();render();renderSalEd()}});
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
@@ -341,7 +349,7 @@ function render(){
 function lockHome(){const r=document.documentElement;r.classList.remove("hl");if(view!=="home"&&view!=="entrate"&&view!=="statistiche")return;
   scrollTo(0,0);const last=$("v-"+view).lastElementChild,nav=document.querySelector(".hdr");if(!last||!nav)return;
   if(last.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top-8)r.classList.add("hl")}
-addEventListener("resize",()=>{lockHome();if(view==="statistiche")renderStats()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(lockHome,100));
+addEventListener("resize",()=>{lockHome();if(view==="statistiche")renderStats();if(view==="entrate")fitSal()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(()=>{lockHome();fitSal()},100));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>lockHome());
 function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","spese","budget","statistiche","impostazioni"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="impostazioni"||v==="entrate"||v==="ricorrenti";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"||v==="impostazioni"?"none":"";if(v==="statistiche")renderStats();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});

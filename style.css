@@ -391,13 +391,16 @@ html.nosb #sb{display:none!important}
 .smt.empty{border-style:dashed;border-color:var(--line);background:rgba(255,255,255,.035)}
 .smt.empty b{font-size:12.5px;font-weight:600;color:var(--mute)}
 .smt:active{transform:scale(.98)}
-.smg{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
+.smg{display:flex;flex-direction:column;gap:var(--gap,6px);margin:0 0 10px}
 .smr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.smm{display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 10px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:700;font-size:15px}
-.smr .smt{align-items:center;justify-content:center;min-height:44px;padding:0 10px;border-radius:14px;text-align:center;font:700 16px/1.2 var(--fh,inherit);white-space:nowrap}
+.smm{display:flex;align-items:center;justify-content:center;height:var(--rh,44px);padding:0 10px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:700;font-size:15px}
+.smr .smt{align-items:center;justify-content:center;height:var(--rh,44px);min-height:0;padding:0 10px;border-radius:14px;text-align:center;font:700 16px/1.2 var(--fh,inherit);white-space:nowrap}
 .smr .smt.empty{font-size:13px;font-weight:600}
 .shd{display:flex;gap:8px;align-items:stretch;flex:none}
 .syr{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer}
 .syr select{appearance:none;-webkit-appearance:none;background:none;border:0;color:var(--ink);font:700 16px/1.2 var(--fh,inherit);text-align:center;text-align-last:center;padding:0;margin-top:1px;width:100%;cursor:pointer}
 .syr select:focus{outline:none}
 @media (max-width:420px){.shd{gap:6px}.smini{padding:7px 9px}}
+#v-entrate .eyebrow.t2{white-space:nowrap}
+#v-entrate .sub{font-size:12px;line-height:1.35;margin-top:0}
+@media (max-width:420px){#v-entrate .eyebrow.t2{font-size:12.5px;letter-spacing:.04em}.shd .smini small{font-size:10px}.shd .smini b,.syr select{font-size:15px}.shd .smini{padding:5px 8px}.smm{font-size:14px}}
