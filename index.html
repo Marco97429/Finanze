@@ -70,6 +70,13 @@
     <div class="stsel"><select class="mchip" id="stmo" aria-label="Mese"></select><select class="mchip" id="sty" aria-label="Anno"></select></div>
     <div class="card"><h2 class="sth2" id="sth"></h2><div id="stsum"></div></div>
     <div class="card" style="margin-top:12px"><div class="dh" style="align-items:center;margin-bottom:6px"><h2 class="sth2" style="margin:0" id="stct">Saldo mensile</h2><span class="mchip" id="stchip"></span></div><div id="stchart"></div></div>
+    <div class="two">
+      <div class="card dist">
+        <div class="dh" style="align-items:center;margin-bottom:6px"><h2 style="margin:0">Spese per categoria</h2></div>
+        <div class="dbody"><div class="donut" id="donut"><div class="hole" id="hole"></div></div><ul class="dl" id="lg"></ul></div>
+      </div>
+      <div class="card"><h2>Spese degli ultimi 6 mesi</h2><div id="bars"></div></div>
+    </div>
   </section>
 
   <section id="v-entrate" hidden>
@@ -108,13 +115,6 @@
         <button class="main" type="submit">Aggiungi spesa</button>
       </form>
       <ul id="list"></ul>
-    </div>
-    <div class="two">
-      <div class="card dist">
-        <div class="dh"><div><small class="eyebrow">Distribuzione</small><h3>Spese per categoria</h3></div><select class="mchip" id="mchip" data-mo="1" aria-label="Mese visualizzato"></select></div>
-        <div class="dbody"><div class="donut" id="donut"><div class="hole" id="hole"></div></div><ul class="dl" id="lg"></ul></div>
-      </div>
-      <div class="card"><h2>Spese degli ultimi 6 mesi</h2><div id="bars"></div></div>
     </div>
   </section>
 

@@ -55,7 +55,7 @@ function openModal(kind,id){
   modal={kind,id};
   const cats=Object.keys(CATS).map(c=>`<option${r&&r.c===c?" selected":""}>${c}</option>`).join("");
   $("mt").textContent={"new-exp":"Nuova spesa del mese","new-rec":"Nuova spesa ricorrente","edit-rec":"Modifica spesa ricorrente","edit-exp":"Modifica spesa"}[kind];
-  $("mbody").innerHTML=`<form id="mf" class="mf"><input data-f="d" class="full" placeholder="Descrizione (es. Affitto)" required value="${r?esc(r.d):""}" aria-label="Descrizione"><input data-f="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo €" required value="${r?r.a:""}" aria-label="Importo"><select data-f="c" aria-label="Categoria">${cats}</select>`+(isRec?`<label>Dal mese<select data-f="from">${MOPT}</select></label><label>Fino al mese (facoltativo)<select data-f="to"><option value="">Senza scadenza</option>${MOPT}</select></label>`:`<select data-f="s" class="full" aria-label="Stato"><option value="paid"${r&&r.s==="paid"?" selected":""}>Pagata</option><option value="plan"${r&&r.s==="plan"?" selected":""}>Preventivata</option></select>`)+`<div class="err full" id="merr" role="alert"></div><div class="macts full"><button type="button" class="mini" data-mclose>Annulla</button>${kind==="edit-exp"?`<button type="button" class="mini danger" data-mreq="1">Elimina spesa</button>`:""}<button class="main" type="submit">${kind.startsWith("edit")?"Salva modifiche":kind==="new-rec"?"Aggiungi ricorrente":"Aggiungi spesa"}</button></div></form>`;
+  $("mbody").innerHTML=`<form id="mf" class="mf"><input data-f="d" class="full" placeholder="Descrizione (es. Affitto)" required value="${r?esc(r.d):""}" aria-label="Descrizione"><input data-f="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo €" required value="${r?r.a:""}" aria-label="Importo"><select data-f="c" aria-label="Categoria">${cats}</select>`+(isRec?`<label>Dal mese<select data-f="from">${MOPT}</select></label><label>Fino al mese (facoltativo)<select data-f="to"><option value="">Senza scadenza</option>${MOPT}</select></label>`:"")+`<div class="err full" id="merr" role="alert"></div><div class="macts full"><button type="button" class="mini" data-mclose>Annulla</button>${kind==="edit-exp"?`<button type="button" class="mini danger" data-mreq="1">Elimina spesa</button>`:""}<button class="main" type="submit">${kind.startsWith("edit")?"Salva modifiche":kind==="new-rec"?"Aggiungi ricorrente":"Aggiungi spesa"}</button></div></form>`;
   if(isRec){const f=$("mf");f.querySelector('[data-f="from"]').value=r?r.from:mk(new Date());f.querySelector('[data-f="to"]').value=r?(r.to||""):""}
   $("mod").hidden=false;$("mbody").querySelector("input").focus()}
 function openConfirm(kind,id){
@@ -69,8 +69,8 @@ document.addEventListener("submit",e=>{
   if(e.target.id!=="mf"||!modal)return;e.preventDefault();
   const q=k=>e.target.querySelector('[data-f="'+k+'"]'),v=k=>q(k).value;
   const a=parseFloat(v("a")),d=v("d").trim();if(!d||!(a>=0))return;if(!(a<=1e7)){$("merr").textContent="Importo troppo alto: il massimo è 10.000.000 €";return}
-  if(modal.kind==="new-exp"){S.items.push({id:Date.now(),m:$("month").value,d,a,c:v("c"),s:v("s")})}
-  else if(modal.kind==="edit-exp"){const it=S.items.find(i=>i.id==modal.id);if(!it)return;Object.assign(it,{d,a,c:v("c"),s:v("s")})}
+  if(modal.kind==="new-exp"){S.items.push({id:Date.now(),m:$("month").value,d,a,c:v("c"),s:"paid"})}
+  else if(modal.kind==="edit-exp"){const it=S.items.find(i=>i.id==modal.id);if(!it)return;Object.assign(it,{d,a,c:v("c")})}
   else{const from=v("from"),to=v("to");
     if(to&&to<from){$("merr").textContent="Il mese finale deve essere uguale o successivo a quello iniziale";return}
     if(modal.kind==="new-rec"){S.rec.push({id:"r"+Date.now(),d,a,c:v("c"),from,to})}
@@ -183,7 +183,7 @@ function openNewExp(rec){
   modal={kind:"new-exp-sheet"};
   document.querySelector(".mbox").classList.add("sheet");
   $("mt").textContent=rec?"Nuova spesa ricorrente":"";document.querySelector(".mbox").setAttribute("aria-label","Nuova spesa");
-  $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="seg" role="group" aria-label="Data della spesa"><button type="button" data-nm="today">Oggi</button><button type="button" data-nm="yest">Ieri</button><button type="button" data-nm="pick">Scegli data</button></div><input type="date" id="ndd" class="ninp" min="2026-01-01" max="2035-12-31" aria-label="Data della spesa" hidden><div class="seg" role="group" aria-label="Stato della spesa"><button type="button" data-ns="paid">Pagata</button><button type="button" data-ns="plan">Preventivata</button></div>`}<div class="ncat"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><button type="button" class="ned" data-ncedit="1" aria-label="Cambia categoria">${IC_EDIT}</button></div><div class="nchips" id="nchips" hidden>${ord().map(c=>`<button type="button" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button></div>`;
+  $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="seg" role="group" aria-label="Data della spesa"><button type="button" data-nm="today">Oggi</button><button type="button" data-nm="yest">Ieri</button><button type="button" data-nm="pick">Scegli data</button></div><input type="date" id="ndd" class="ninp" min="2026-01-01" max="2035-12-31" aria-label="Data della spesa" hidden>`}<div class="ncat"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><button type="button" class="ned" data-ncedit="1" aria-label="Cambia categoria">${IC_EDIT}</button></div><div class="nchips" id="nchips" hidden>${ord().map(c=>`<button type="button" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button></div>`;
   if(rec)$("nfrom").value=cur;else $("ndd").value=vm===cur?NYMD(new Date()):(vm<"2026-01"?"2026-01":vm)+"-01";
   $("nd").addEventListener("input",neDesc);if(rec){$("nfrom").addEventListener("change",neUpdate);$("nto").addEventListener("change",neUpdate)}else $("ndd").addEventListener("input",neUpdate);
   $("mod").hidden=false;neUpdate();
@@ -274,7 +274,7 @@ function salOf(m){const v=salAt(m);return v===null?0:v}
 function salAt(k){const v=S.sals[k];return v===undefined?0:v}
 function syncSal(){$("salary").value=salOf($("month").value)||""}
 syncSal();
-$("mchip").innerHTML=Array.from({length:12},(_,i)=>{const n=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1));return `<option value="${String(i+1).padStart(2,"0")}">${n[0].toUpperCase()+n.slice(1)}</option>`}).join("");
+const MO12=Array.from({length:12},(_,i)=>{const n=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1));return `<option value="${String(i+1).padStart(2,"0")}">${n[0].toUpperCase()+n.slice(1)}</option>`}).join("");
 function renderSal(){setTimeout(lockHome,0);
   const Y=+$("month").value.slice(0,4);$("yrchip").textContent=Y;
   const pv=document.querySelector('[data-yr="-1"]');if(pv)pv.disabled=Y<=2026;
@@ -310,9 +310,9 @@ document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset
 
 const cgOpen={};
 function fdt(i){return i.dt?i.dt.slice(8,10)+"/"+i.dt.slice(5,7)+"/"+i.dt.slice(0,4):i.m.slice(5,7)+"/"+i.m.slice(0,4)}
-function expRow(i){return `<li class="row xr" data-rowedit="${i.id}"><span><b class="xdt">${fdt(i)}</b> ${esc(i.d)}</span><span class="amt">${eur2(i.a)}</span><small>${i.s==="plan"?'<span class="tag">preventivata</span> <button class="mini" data-pay="'+i.id+'">Segna come pagata</button>':'<span class="tag paid">pagata</span> <button class="mini" data-unpay="'+i.id+'">Segna come preventivata</button>'}</small></li>`}
+function expRow(i){return `<li class="row xr" data-rowedit="${i.id}"><span><b class="xdt">${fdt(i)}</b> ${esc(i.d)}</span><span class="amt">${eur2(i.a)}</span></li>`}
 function renderGroups(its){
-  if(!its.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con NEW.</li>';
+  if(!its.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con NUOVA SPESA.</li>';
   const key=i=>i.dt||(i.m+"-01");
   return ord().map(c=>{
     const g=its.filter(i=>i.c===c).sort((a,b)=>key(a)<key(b)?1:key(a)>key(b)?-1:(a.id>b.id?-1:a.id<b.id?1:0));
@@ -331,19 +331,6 @@ function render(){
   $("pill").innerHTML=Array.from({length:12},(_,i)=>new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1)).toUpperCase()+" "+m.slice(0,4)).map((t,i)=>`<option value="${String(i+1).padStart(2,"0")}">${t}</option>`).join("");$("pill").value=m.slice(5,7);
   
 
-  const [y,mo]=m.split("-").map(Number);
-  const ms=Array.from({length:6},(_,k)=>new Date(y,mo-1-(5-k),1));
-  const vals=ms.map(d=>sum(mk(d)));
-  const mx=Math.max(...vals,1);
-  $("bars").innerHTML=`<svg viewBox="0 0 300 130" role="img" aria-label="Spese negli ultimi 6 mesi">`+vals.map((v,i)=>{const h=v/mx*90;return `<rect x="${i*50+9}" y="${100-h}" width="32" height="${Math.max(h,1)}" rx="4" fill="${i===5?"#7fd6e8":"#3a8fa3"}"/><text x="${i*50+25}" y="118" text-anchor="middle" font-size="11" fill="#9aa6ad">${MN.format(ms[i])}</text>`}).join("")+`</svg>`;
-
-
-  const ct=ord().map(c=>[c,sum(m,i=>i.c===c)]);
-  let a=0;const seg=ct.filter(x=>x[1]>0).map(([c,v])=>{const s=a;a+=v/tot*100;return `${COL[c]} ${s}% ${a}%`});
-  $("donut").style.background=tot?`conic-gradient(${seg.join(",")})`:"var(--line)";
-  $("hole").innerHTML=`<b>€${new Intl.NumberFormat("it-IT",{maximumFractionDigits:0}).format(tot)}</b>totale`;
-  $("mchip").value=m.slice(5,7);
-  $("lg").innerHTML=ct.filter(x=>x[1]>0).map(([c,v])=>`<li><i class="dot" style="background:${COL[c]}"></i><div><b>${c}</b><small>${e2(v)}</small></div><em>${(v/tot*100).toFixed(1).replace(".",",")}%</em></li>`).join("")||'<li class="ks">Nessuna spesa in questo mese</li>';
 
   renderRec();renderSal();renderCnt();renderTop();$("list").innerHTML=renderGroups(its);
 
@@ -367,7 +354,7 @@ $("f").addEventListener("submit",e=>{e.preventDefault();
 
 /* ---- Statistiche ---- */
 const ST={mode:"m",mo:"",y:0};
-$("stmo").innerHTML=$("mchip").innerHTML;
+$("stmo").innerHTML=MO12;
 $("sty").innerHTML=Array.from({length:10},(_,i)=>`<option value="${2026+i}">${2026+i}</option>`).join("");
 function stData(){
   const MX=1e9,cap=v=>Math.max(-MX,Math.min(MX,v));
@@ -384,9 +371,25 @@ function stData(){
   let b=0;const vals=[];for(let i=0;i<=last;i++){b+=mv[i];vals.push(cap(b))}
   return{sal,spe,vals,slots:12,labels:keys.map((k,i)=>[i,MN.format(new Date(ST.y,i,1))])};
 }
+function renderCharts(keys,endKey){
+  const m0=keys,tot=S.items.filter(i=>m0.includes(i.m)).reduce((t,i)=>t+i.a,0);
+  const e2=n=>"€"+new Intl.NumberFormat("it-IT",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+  const [y,mo]=endKey.split("-").map(Number);
+  const ms=Array.from({length:6},(_,k)=>new Date(y,mo-1-(5-k),1));
+  const vals=ms.map(d=>sum(mk(d)));
+  const mx=Math.max(...vals,1);
+  $("bars").innerHTML=`<svg viewBox="0 0 300 130" role="img" aria-label="Spese negli ultimi 6 mesi">`+vals.map((v,i)=>{const h=v/mx*90;return `<rect x="${i*50+9}" y="${100-h}" width="32" height="${Math.max(h,1)}" rx="4" fill="${i===5?"#7fd6e8":"#3a8fa3"}"/><text x="${i*50+25}" y="118" text-anchor="middle" font-size="11" fill="#9aa6ad">${MN.format(ms[i])}</text>`}).join("")+`</svg>`;
+  const ct=ord().map(c=>[c,S.items.filter(i=>m0.includes(i.m)&&i.c===c).reduce((t,i)=>t+i.a,0)]);
+  let a=0;const seg=ct.filter(x=>x[1]>0).map(([c,v])=>{const s=a;a+=v/tot*100;return `${COL[c]} ${s}% ${a}%`});
+  $("donut").style.background=tot?`conic-gradient(${seg.join(",")})`:"var(--line)";
+  $("hole").innerHTML=`<b>€${new Intl.NumberFormat("it-IT",{maximumFractionDigits:0}).format(tot)}</b>totale`;
+  $("lg").innerHTML=ct.filter(x=>x[1]>0).map(([c,v])=>`<li><i class="dot" style="background:${COL[c]}"></i><div><b>${c}</b><small>${e2(v)}</small></div><em>${(v/tot*100).toFixed(1).replace(".",",")}%</em></li>`).join("")||'<li class="ks">Nessuna spesa in questo periodo</li>'}
 function renderStats(){setTimeout(lockHome,0);
   if(!ST.y){const n=new Date();ST.y=Math.max(2026,n.getFullYear());ST.mo=String(n.getMonth()+1).padStart(2,"0")}
   document.querySelectorAll("[data-stm]").forEach(b=>b.classList.toggle("on",b.dataset.stm===ST.mode));
+  {const nw=new Date(),cur=nw.getFullYear()===ST.y?String(nw.getMonth()+1).padStart(2,"0"):"12";
+   if(ST.mode==="m")renderCharts([ST.y+"-"+ST.mo],ST.y+"-"+ST.mo);
+   else renderCharts(Array.from({length:12},(_,i)=>ST.y+"-"+String(i+1).padStart(2,"0")),ST.y+"-"+cur)}
   $("stmo").value=ST.mo;$("sty").value=String(ST.y);$("stmo").hidden=ST.mode!=="m";$("stmo").parentNode.classList.toggle("one",ST.mode!=="m");
   const mo=ST.mode==="m";$("sth").textContent=mo?"Riepilogo mese":"Riepilogo anno";$("stct").textContent=mo?"Saldo mensile":"Saldo annuale";
   const D=stData(),f2=n=>eur2(n);
@@ -450,8 +453,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.save){const li=t.closest("li"),it=S.items.find(i=>i.id==t.dataset.save);const v=k=>li.querySelector('[data-f="'+k+'"]').value;const a=parseFloat(v("a"));if(it&&v("d").trim()&&a>=0){it.d=v("d").trim();it.a=a;it.c=v("c");editId=null;save();render()}}
   if(t.dataset.del)openConfirm("del-exp",t.dataset.del);
   if(t.dataset.rdel)openConfirm("del-rec",t.dataset.rdel);
-  if(t.dataset.pay){const i=S.items.find(i=>i.id==t.dataset.pay);if(i){i.s="paid";save();render()}}
-  if(t.dataset.unpay){const i=S.items.find(i=>i.id==t.dataset.unpay);if(i){i.s="plan";save();render()}}});
+});
 document.addEventListener("change",e=>{
   const d=e.target.dataset||{};if(d.mo){const yy=$("month").value.slice(0,4);$("month").value=yy+"-"+e.target.value;syncSal();ensureRec();render();return}
   if(d.lm){S.lim[d.lm].t=e.target.value;save();render()}
