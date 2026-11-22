@@ -427,7 +427,7 @@ function openRecInfo(it){
   $("mt").textContent="Spesa ricorrente";
   $("mbody").innerHTML=`<p class="mtxt"><b>${esc(it.d)}</b> è una spesa ricorrente: non si può modificare o eliminare da qui. Per gestirla vai nella sezione <b>Ricorrenti</b>.</p><div class="macts"><button type="button" class="mini" data-mclose>Chiudi</button><button type="button" class="main" data-view="ricorrenti" data-mclose>Vai a Ricorrenti</button></div>`;
   $("mod").hidden=false}
-function expRow(i){return `<li class="row xr" data-rowedit="${i.id}"><span><b class="xdt">${fdt(i)}</b> ${esc(i.d)}${i.rid?' <i class="rtg">Spesa ricorrente</i>':""}</span><span class="amt">${eur2(i.a)}</span></li>`}
+function expRow(i){return `<li class="row xr" data-rowedit="${i.id}"><span class="xl"><b class="xdt">${fdt(i)}</b><span class="xn">${esc(i.d)}</span>${i.rid?'<i class="rtg">Spesa ricorrente</i>':""}</span><span class="amt">${eur2(i.a)}</span></li>`}
 function renderGroups(its){
   if(!its.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con NUOVA SPESA.</li>';
   const key=i=>i.dt||(i.m+"-01");
