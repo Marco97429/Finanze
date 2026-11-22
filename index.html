@@ -70,6 +70,7 @@
     <div class="stsel"><select class="mchip" id="stmo" aria-label="Mese"></select><select class="mchip" id="sty" aria-label="Anno"></select></div>
     <div class="card"><h2 class="sth2" id="sth"></h2><div id="stsum"></div></div>
     <div class="card" style="margin-top:12px"><div class="dh" style="align-items:center;margin-bottom:6px"><h2 class="sth2" style="margin:0" id="stct">Saldo mensile</h2><span class="mchip" id="stchip"></span></div><div id="stchart"></div></div>
+    <div class="card" style="margin-top:12px"><div class="dh" style="align-items:center;margin-bottom:6px"><h2 class="sth2" style="margin:0">Andamento stipendio</h2></div><div id="sline"></div></div>
     <div class="two">
       <div class="card dist">
         <div class="dh" style="align-items:center;margin-bottom:6px"><h2 style="margin:0">Spese per categoria</h2></div>
@@ -82,14 +83,9 @@
   <section id="v-entrate" hidden>
     <h1 class="gh sth1">Stipendio</h1>
     <div class="card">
-      <div class="dh" style="align-items:center"><small class="eyebrow t2">Inserisci importo</small><div class="smini" id="semini"></div></div>
+      <div class="dh" style="align-items:center"><small class="eyebrow t2">Inserisci importo</small><div class="shd"><div class="smini" id="semini"></div><label class="smini syr"><small>Anno</small><select id="syr" aria-label="Anno di visualizzazione"></select></label></div></div>
       <div id="sed"></div>
       <div class="sub">Inserisci l’importo dello stipendio per ogni mese. I mesi senza importo inserito valgono 0&nbsp;€.</div>
-    </div>
-    <div class="card" style="margin-top:12px">
-      <div class="dh wy"><small class="eyebrow t2">Andamento mensile</small>
-        <div class="acts" style="align-items:center"><button class="mini" data-yr="-1" aria-label="Anno precedente">‹</button><span class="mchip" id="yrchip"></span><button class="mini" data-yr="1" aria-label="Anno successivo">›</button></div></div>
-      <div id="sline"></div>
     </div>
   </section>
 

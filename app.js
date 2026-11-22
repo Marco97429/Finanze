@@ -278,11 +278,10 @@ function syncSal(){$("salary").value=salOf($("month").value)||""}
 syncSal();
 const MO12=Array.from({length:12},(_,i)=>{const n=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(2026,i,1));return `<option value="${String(i+1).padStart(2,"0")}">${n[0].toUpperCase()+n.slice(1)}</option>`}).join("");
 function renderSal(){setTimeout(lockHome,0);
-  const Y=+$("month").value.slice(0,4);$("yrchip").textContent=Y;
-  const pv=document.querySelector('[data-yr="-1"]');if(pv)pv.disabled=Y<=2026;
+  const Y=ST.y||+$("month").value.slice(0,4);
   const keys=Array.from({length:12},(_,i)=>Y+"-"+String(i+1).padStart(2,"0"));
   const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],vals=keys.map(k=>S.sals[k]!==undefined?S.sals[k]:(k>fi&&k<la?0:null)),ok=vals.filter(v=>v!==null);
-  if(!ok.length){$("sline").innerHTML='<div class="empty">Nessuno stipendio inserito per questo anno: usa i campi qui sotto.</div>';return}
+  if(!ok.length){$("sline").innerHTML='<div class="empty">Nessuno stipendio inserito per questo anno: inseriscilo nella sezione Stipendio.</div>';return}
   const mx=Math.max(...ok),step=[500,1000,2000,2500,5000,10000,20000,25000,50000,100000,200000,250000,500000,1000000,2000000,5000000,10000000].find(q=>Math.floor(mx/q)+1<=8)||10000000,top=(Math.floor(mx/step)+1)*step,n=top/step,H=Math.max(150,n*28),B=20+H;
   const W=Math.max(260,Math.round($("sline").clientWidth||document.documentElement.clientWidth-84)),L=W<420?46:56,R=W<420?10:20,sp=(W-L-R)/11,fs=W<420?10:11,X=i=>L+i*sp,Yy=v=>B-v/top*H;
   const fm=x=>"€"+new Intl.NumberFormat("it-IT",{maximumFractionDigits:0}).format(x);
@@ -295,18 +294,16 @@ function renderSal(){setTimeout(lockHome,0);
   $("sline").innerHTML=`<svg viewBox="0 0 ${W} ${B+32}" role="img" aria-label="Andamento dello stipendio nell’anno ${Y}"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd6e8" stop-opacity=".3"/><stop offset="1" stop-color="#7fd6e8" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${pts[0][0]},${B} ${ln} ${pts[pts.length-1][0]},${B}" fill="url(#sg)"/><polyline points="${ln}" fill="none" stroke="#7fd6e8" stroke-width="2.5" stroke-linejoin="round"/>${dots}${mn}</svg>`;
 }
 function updPh(){}
-let SEm="";
 function renderSalEd(){
-  const Y=+$("month").value.slice(0,4);if(!SEm)SEm=$("month").value.slice(5,7);
-  const ks=Object.keys(S.sals).sort(),fi=ks[0],la=ks[ks.length-1],fa=n=>Number.isInteger(n)?eur(n):eur2(n);
+  const Y=+$("month").value.slice(0,4);$("syr").innerHTML=Array.from({length:10},(_,i)=>`<option value="${2026+i}"${2026+i===Y?" selected":""}>${2026+i}</option>`).join("");
+  const fa=n=>Number.isInteger(n)?eur(n):eur2(n);
   const n=Object.keys(S.sals).filter(k=>k.slice(0,4)===String(Y)&&S.sals[k]!==undefined).length;
-  const k=Y+"-"+SEm,v=S.sals[k];let cls,amt,cap;
-  if(v!==undefined){cls="set";amt=fa(v);cap="Importo"}
-  else{cls="empty";amt="–";cap="Tocca per inserire"}
-  const opts=Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,"0"),t=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1));return `<option value="${m}"${m===SEm?" selected":""}>${t[0].toUpperCase()+t.slice(1)}</option>`}).join("");
   $("semini").innerHTML=`<small>Mesi inseriti</small><b>${n} / 12</b>`;
-  $("sed").innerHTML=`<div class="sesel"><select class="mchip" id="semo" aria-label="Mese">${opts}</select><button type="button" class="seamt ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${mLong(k).toLowerCase()}: ${amt}. Tocca per modificare"><small>${cap}</small><b>${amt}</b></button></div>`}
-document.addEventListener("change",e=>{if(e.target.id==="semo"){SEm=e.target.value;renderSalEd()}});
+  $("sed").innerHTML='<div class="smg">'+Array.from({length:12},(_,i)=>{
+    const k=Y+"-"+String(i+1).padStart(2,"0"),v=S.sals[k],t=new Intl.DateTimeFormat("it-IT",{month:"long"}).format(new Date(Y,i,1)),nm=t[0].toUpperCase()+t.slice(1);
+    const cls=v!==undefined?"set":"empty",amt=v!==undefined?fa(v):"Tocca per inserire";
+    return `<div class="smr"><div class="smm">${nm}</div><button type="button" class="smt ${cls}" data-sm="${k}" aria-label="Stipendio netto di ${nm.toLowerCase()} ${Y}: ${v!==undefined?amt:"non inserito"}. Tocca per modificare">${amt}</button></div>`}).join("")+"</div>"}
+document.addEventListener("change",e=>{if(e.target.id==="syr"){const mm=$("month").value.slice(5,7);$("month").value=e.target.value+"-"+mm;syncSal();ensureRec();render();renderSalEd()}});
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
@@ -334,7 +331,7 @@ function render(){
   
 
 
-  renderRec();renderSal();renderCnt();renderTop();$("list").innerHTML=renderGroups(its);
+  renderRec();renderCnt();renderTop();$("list").innerHTML=renderGroups(its);
 
   $("cats").innerHTML=ord().map((c,ix,arr)=>{
     const p=sum(m,i=>i.c===c&&i.s==="paid"),q=sum(m,i=>i.c===c&&i.s==="plan");
@@ -344,9 +341,9 @@ function render(){
 function lockHome(){const r=document.documentElement;r.classList.remove("hl");if(view!=="home"&&view!=="entrate"&&view!=="statistiche")return;
   scrollTo(0,0);const last=$("v-"+view).lastElementChild,nav=document.querySelector(".hdr");if(!last||!nav)return;
   if(last.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top-8)r.classList.add("hl")}
-addEventListener("resize",()=>{lockHome();if(view==="entrate")renderSal()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(lockHome,100));
+addEventListener("resize",()=>{lockHome();if(view==="statistiche")renderStats()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(lockHome,100));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>lockHome());
-function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","spese","budget","statistiche","impostazioni"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="impostazioni"||v==="entrate"||v==="ricorrenti";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"||v==="impostazioni"?"none":"";if(v==="statistiche")renderStats();if(v==="entrate")renderSal();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
+function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","spese","budget","statistiche","impostazioni"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":v)));$("pill").hidden=v==="home"||v==="impostazioni"||v==="entrate"||v==="ricorrenti";$("greet").hidden=v!=="home";$("mrow").style.display=v==="statistiche"||v==="impostazioni"?"none":"";if(v==="statistiche")renderStats();$("mrow").classList.toggle("sp",v==="spese");if(v==="entrate")renderSalEd();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
 $("f").addEventListener("submit",e=>{e.preventDefault();
@@ -389,6 +386,7 @@ function renderCharts(keys,endKey){
 function renderStats(){setTimeout(lockHome,0);
   if(!ST.y){const n=new Date();ST.y=Math.max(2026,n.getFullYear());ST.mo=String(n.getMonth()+1).padStart(2,"0")}
   document.querySelectorAll("[data-stm]").forEach(b=>b.classList.toggle("on",b.dataset.stm===ST.mode));
+  renderSal();
   {const nw=new Date(),cur=nw.getFullYear()===ST.y?String(nw.getMonth()+1).padStart(2,"0"):"12";
    if(ST.mode==="m")renderCharts([ST.y+"-"+ST.mo],ST.y+"-"+ST.mo);
    else renderCharts(Array.from({length:12},(_,i)=>ST.y+"-"+String(i+1).padStart(2,"0")),ST.y+"-"+cur)}
