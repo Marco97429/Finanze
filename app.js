@@ -7,6 +7,7 @@ S.items.forEach(i=>{i.c={Spesa:"Cibo",Trasporti:"Macchina"}[i.c]||i.c});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const eur=n=>new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
 const eur2=n=>new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"}).format(n);
+const cap=t=>t?t.charAt(0).toLocaleUpperCase("it-IT")+t.slice(1):t;
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
 const mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
@@ -28,6 +29,7 @@ function editRow(i){return `<li class="row ed"><input data-f="d" value="${esc(i.
 const addM=(m,n)=>{const [y,o]=m.split("-").map(Number);return mk(new Date(y,o-1+n,1))};
 const ml=m=>{const [y,o]=m.split("-").map(Number);return new Intl.DateTimeFormat("it-IT",{month:"short",year:"numeric"}).format(new Date(y,o-1,1))};
 if(!Array.isArray(S.rec))S.rec=[];
+S.items.forEach(i=>{if(typeof i.d==="string")i.d=cap(i.d)});S.rec.forEach(r=>{if(typeof r.d==="string")r.d=cap(r.d)});
 function ensureRec(){
   const now=mk(new Date()),sel=$("month").value||now,hz=addM(sel>now?sel:now,12);let ch=false;
   S.rec.forEach(r=>{for(let m=r.from;m<=hz&&(!r.to||m<=r.to);m=addM(m,1)){
@@ -68,7 +70,7 @@ function openConfirm(kind,id){
 document.addEventListener("submit",e=>{
   if(e.target.id!=="mf"||!modal)return;e.preventDefault();
   const q=k=>e.target.querySelector('[data-f="'+k+'"]'),v=k=>q(k).value;
-  const a=parseFloat(v("a")),d=v("d").trim();if(!d||!(a>=0))return;if(!(a<=1e7)){$("merr").textContent="Importo troppo alto: il massimo è 10.000.000 €";return}
+  const a=parseFloat(v("a")),d=cap(v("d").trim());if(!d||!(a>=0))return;if(!(a<=1e7)){$("merr").textContent="Importo troppo alto: il massimo è 10.000.000 €";return}
   if(modal.kind==="new-exp"){S.items.push({id:Date.now(),m:$("month").value,d,a,c:v("c"),s:"paid"})}
   else if(modal.kind==="edit-exp"){const it=S.items.find(i=>i.id==modal.id);if(!it)return;Object.assign(it,{d,a,c:v("c")})}
   else{const from=v("from"),to=v("to");
@@ -170,7 +172,7 @@ function nePress(k){
   else if(a.length<7)a+=k;
   ne.amt=a;neUpdate()}
 function neSave(){
-  const d=$("nd").value.trim(),a=neVal();if(!d||!(a>0))return;
+  const d=cap($("nd").value.trim()),a=neVal();if(!d||!(a>0))return;
   if(ne.rec){const from=$("nfrom").value,to=$("nto").value;if(to&&to<from)return;S.rec.push({id:"r"+Date.now(),d,a,c:ne.cat,from,to});S.lastCat=ne.cat;ensureRec();save();closeModal();render();return}
   const dt=neDate(),m=dt.slice(0,7);
   S.items.push({id:Date.now(),m,dt,d,a,c:ne.cat,s:ne.st});
@@ -349,7 +351,7 @@ $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
 $("f").addEventListener("submit",e=>{e.preventDefault();
   const a=parseFloat($("a").value);if(!(a>=0))return;
-  S.items.push({id:Date.now(),m:$("month").value,d:$("d").value.trim(),a,c:$("c").value,s:$("s").value});
+  S.items.push({id:Date.now(),m:$("month").value,d:cap($("d").value.trim()),a,c:$("c").value,s:$("s").value});
   save();$("d").value="";$("a").value="";render();setExpOpen(false)});
 
 /* ---- Statistiche ---- */
@@ -450,7 +452,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.edit)openModal("edit-exp",t.dataset.edit);
   if(t.dataset.mreq&&modal&&modal.kind==="edit-exp"){openConfirm("del-exp",modal.id)}
   if(t.dataset.cancel){editId=null;render()}
-  if(t.dataset.save){const li=t.closest("li"),it=S.items.find(i=>i.id==t.dataset.save);const v=k=>li.querySelector('[data-f="'+k+'"]').value;const a=parseFloat(v("a"));if(it&&v("d").trim()&&a>=0){it.d=v("d").trim();it.a=a;it.c=v("c");editId=null;save();render()}}
+  if(t.dataset.save){const li=t.closest("li"),it=S.items.find(i=>i.id==t.dataset.save);const v=k=>li.querySelector('[data-f="'+k+'"]').value;const a=parseFloat(v("a"));if(it&&v("d").trim()&&a>=0){it.d=cap(v("d").trim());it.a=a;it.c=v("c");editId=null;save();render()}}
   if(t.dataset.del)openConfirm("del-exp",t.dataset.del);
   if(t.dataset.rdel)openConfirm("del-rec",t.dataset.rdel);
 });
