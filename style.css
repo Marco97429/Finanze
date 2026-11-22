@@ -308,7 +308,7 @@ body{touch-action:manipulation}
 .hdr nav button.on::after{display:none}
 .hdr nav button:active{transform:scale(.96)}
 @media (min-width:561px){.hdr{max-width:560px}.hdr nav button{font-size:11.5px}}
-#v-spese .two{margin-top:12px}
+#v-statistiche .two{margin-top:12px}
 
 .sth1{margin:2px 0 14px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04);margin-bottom:12px}
@@ -382,3 +382,4 @@ html.nosb #sb{display:none!important}
 .macts{flex-wrap:wrap}.macts .mini,.macts .main{white-space:nowrap}
 @media (max-width:420px){.macts:has([data-mreq]) [data-mclose]{order:3;flex:1 0 100%}}
 .cgl .row.xr{grid-template-columns:minmax(0,1fr) auto}
+.mrow.sp{height:0;margin:0;padding:0;position:relative;z-index:2}.mrow.sp #pill{position:absolute;right:0;top:3px;margin:0}
