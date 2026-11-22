@@ -49,7 +49,7 @@ function recRow(r){const f=r.f||"m",fd=x=>dFmt.format(new Date(+x.slice(0,4),+x.
 function recRange(r){const fd=x=>dFmt.format(new Date(+x.slice(0,4),+x.slice(5,7)-1,+x.slice(8,10))),st=recStart(r),en=r.end!==undefined?r.end:(r.to?(()=>{const [y,o]=r.to.split("-").map(Number);return r.to+"-"+String(new Date(y,o,0).getDate()).padStart(2,"0")})():"");
   return "Dal "+fd(st)+(en?" al "+fd(en):" senza scadenza")}
 function recRow2(r){const f=r.f||"m";
-  return `<li class="row xr rr" data-recedit="${r.id}"><span><b class="xdt">${recRange(r)}</b> ${esc(r.d)}</span><span class="amt">${eur2(r.a)}/${FQL[f]}</span></li>`}
+  return `<li class="row xr rr" data-recedit="${r.id}"><span class="rrn">${esc(r.d)}</span><span class="amt">${eur2(r.a)}/${FQL[f]}</span><span class="rrd">${recRange(r)}</span></li>`}
 function renderRec(){
   const outs=S.rec.filter(r=>r.t!=="in");
   $("rec2").innerHTML=outs.length?ord().map(c=>{
@@ -464,7 +464,7 @@ function renderCharts(keys,endKey){
 function renderStats(){setTimeout(lockHome,0);
   if(!ST.y){const n=new Date();ST.y=Math.max(2026,n.getFullYear());ST.mo=String(n.getMonth()+1).padStart(2,"0")}
   document.querySelectorAll("[data-stm]").forEach(b=>b.classList.toggle("on",b.dataset.stm===ST.mode));
-  renderSal();
+  $("scard").style.display=ST.mode==="a"?"":"none";if(ST.mode==="a")renderSal();
   {const nw=new Date(),cur=nw.getFullYear()===ST.y?String(nw.getMonth()+1).padStart(2,"0"):"12";
    if(ST.mode==="m")renderCharts([ST.y+"-"+ST.mo],ST.y+"-"+ST.mo);
    else renderCharts(Array.from({length:12},(_,i)=>ST.y+"-"+String(i+1).padStart(2,"0")),ST.y+"-"+cur)}
