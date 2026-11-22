@@ -45,14 +45,8 @@ const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
 const IC_UP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
 const IC_DN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-function applyCol(){
-  [["exp","list","le spese del mese"]].forEach(([k,id,n])=>{
-    const c=!!(S.col&&S.col[k]),b=document.querySelector('[data-col="'+k+'"]');
-    $(id).hidden=c;b.innerHTML=c?IC_DN:IC_UP;b.setAttribute("aria-expanded",!c);
-    b.setAttribute("aria-label",(c?"Espandi ":"Comprimi ")+n);b.title=c?"Espandi":"Comprimi"})}
-function renderCnt(){const m=$("month").value;$("rcnt2").textContent=S.rec.length;$("ecnt").textContent=S.items.filter(i=>i.m===m).length}
-applyCol();
-function setExpOpen(o){$("f").hidden=!o;const b=$("etg");b.textContent=o?"−":"+";b.setAttribute("aria-expanded",o);b.setAttribute("aria-label",o?"Chiudi senza aggiungere":"Aggiungi spesa");if(o){$("d").focus()}else{$("f").reset()}}
+function renderCnt(){const m=$("month").value;$("rcnt2").textContent=S.rec.length;}
+function setExpOpen(o){$("f").hidden=!o;if(o){$("d").focus()}else{$("f").reset()}}
 let modal=null;
 function closeModal(){$("mod").hidden=true;modal=null;ne=null;am=null;$("mbody").innerHTML="";document.querySelector(".mbox").classList.remove("sheet")}
 function openModal(kind,id){
@@ -61,7 +55,7 @@ function openModal(kind,id){
   modal={kind,id};
   const cats=Object.keys(CATS).map(c=>`<option${r&&r.c===c?" selected":""}>${c}</option>`).join("");
   $("mt").textContent={"new-exp":"Nuova spesa del mese","new-rec":"Nuova spesa ricorrente","edit-rec":"Modifica spesa ricorrente","edit-exp":"Modifica spesa"}[kind];
-  $("mbody").innerHTML=`<form id="mf" class="mf"><input data-f="d" class="full" placeholder="Descrizione (es. Affitto)" required value="${r?esc(r.d):""}" aria-label="Descrizione"><input data-f="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo €" required value="${r?r.a:""}" aria-label="Importo"><select data-f="c" aria-label="Categoria">${cats}</select>`+(isRec?`<label>Dal mese<select data-f="from">${MOPT}</select></label><label>Fino al mese (facoltativo)<select data-f="to"><option value="">Senza scadenza</option>${MOPT}</select></label>`:`<select data-f="s" class="full" aria-label="Stato"><option value="paid"${r&&r.s==="paid"?" selected":""}>Pagata</option><option value="plan"${r&&r.s==="plan"?" selected":""}>Preventivata</option></select>`)+`<div class="err full" id="merr" role="alert"></div><div class="macts full"><button type="button" class="mini" data-mclose>Annulla</button><button class="main" type="submit">${kind.startsWith("edit")?"Salva modifiche":kind==="new-rec"?"Aggiungi ricorrente":"Aggiungi spesa"}</button></div></form>`;
+  $("mbody").innerHTML=`<form id="mf" class="mf"><input data-f="d" class="full" placeholder="Descrizione (es. Affitto)" required value="${r?esc(r.d):""}" aria-label="Descrizione"><input data-f="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo €" required value="${r?r.a:""}" aria-label="Importo"><select data-f="c" aria-label="Categoria">${cats}</select>`+(isRec?`<label>Dal mese<select data-f="from">${MOPT}</select></label><label>Fino al mese (facoltativo)<select data-f="to"><option value="">Senza scadenza</option>${MOPT}</select></label>`:`<select data-f="s" class="full" aria-label="Stato"><option value="paid"${r&&r.s==="paid"?" selected":""}>Pagata</option><option value="plan"${r&&r.s==="plan"?" selected":""}>Preventivata</option></select>`)+`<div class="err full" id="merr" role="alert"></div><div class="macts full"><button type="button" class="mini" data-mclose>Annulla</button>${kind==="edit-exp"?`<button type="button" class="mini danger" data-mreq="1">Elimina spesa</button>`:""}<button class="main" type="submit">${kind.startsWith("edit")?"Salva modifiche":kind==="new-rec"?"Aggiungi ricorrente":"Aggiungi spesa"}</button></div></form>`;
   if(isRec){const f=$("mf");f.querySelector('[data-f="from"]').value=r?r.from:mk(new Date());f.querySelector('[data-f="to"]').value=r?(r.to||""):""}
   $("mod").hidden=false;$("mbody").querySelector("input").focus()}
 function openConfirm(kind,id){
@@ -188,7 +182,7 @@ function openNewExp(rec){
   ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0],sug:false,manual:false,st:"paid",dm:vm===cur?"today":"pick",rec:!!rec};
   modal={kind:"new-exp-sheet"};
   document.querySelector(".mbox").classList.add("sheet");
-  $("mt").textContent=rec?"Nuova spesa ricorrente":"Nuova spesa";
+  $("mt").textContent=rec?"Nuova spesa ricorrente":"";document.querySelector(".mbox").setAttribute("aria-label","Nuova spesa");
   $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="seg" role="group" aria-label="Data della spesa"><button type="button" data-nm="today">Oggi</button><button type="button" data-nm="yest">Ieri</button><button type="button" data-nm="pick">Scegli data</button></div><input type="date" id="ndd" class="ninp" min="2026-01-01" max="2035-12-31" aria-label="Data della spesa" hidden><div class="seg" role="group" aria-label="Stato della spesa"><button type="button" data-ns="paid">Pagata</button><button type="button" data-ns="plan">Preventivata</button></div>`}<div class="ncat"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><button type="button" class="ned" data-ncedit="1" aria-label="Cambia categoria">${IC_EDIT}</button></div><div class="nchips" id="nchips" hidden>${ord().map(c=>`<button type="button" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button></div>`;
   if(rec)$("nfrom").value=cur;else $("ndd").value=vm===cur?NYMD(new Date()):(vm<"2026-01"?"2026-01":vm)+"-01";
   $("nd").addEventListener("input",neDesc);if(rec){$("nfrom").addEventListener("change",neUpdate);$("nto").addEventListener("change",neUpdate)}else $("ndd").addEventListener("input",neUpdate);
@@ -314,6 +308,17 @@ document.addEventListener("change",e=>{if(e.target.id==="semo"){SEm=e.target.val
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
+const cgOpen={};
+function fdt(i){return i.dt?i.dt.slice(8,10)+"/"+i.dt.slice(5,7)+"/"+i.dt.slice(0,4):i.m.slice(5,7)+"/"+i.m.slice(0,4)}
+function expRow(i){return `<li class="row xr" data-rowedit="${i.id}"><span><b class="xdt">${fdt(i)}</b> ${esc(i.d)}</span><span class="amt">${eur2(i.a)}</span><small>${i.s==="plan"?'<span class="tag">preventivata</span> <button class="mini" data-pay="'+i.id+'">Segna come pagata</button>':'<span class="tag paid">pagata</span> <button class="mini" data-unpay="'+i.id+'">Segna come preventivata</button>'}</small></li>`}
+function renderGroups(its){
+  if(!its.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con NEW.</li>';
+  const key=i=>i.dt||(i.m+"-01");
+  return ord().map(c=>{
+    const g=its.filter(i=>i.c===c).sort((a,b)=>key(a)<key(b)?1:key(a)>key(b)?-1:(a.id>b.id?-1:a.id<b.id?1:0));
+    if(!g.length)return "";
+    const open=!!cgOpen[c]||g.some(i=>i.id==editId),t=g.reduce((x,i)=>x+i.a,0);
+    return `<li class="cg"><button type="button" class="cgh" data-cg="${c}" aria-expanded="${open}" aria-label="${c}: ${g.length} spese, totale ${eur2(t)}"><i class="dot" style="background:${COL[c]}"></i><span class="cgn">${c} <span class="cnt">${g.length}</span></span><span class="amt">${eur2(t)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="cgl"${open?"":" hidden"}>${g.map(i=>i.id==editId?editRow(i):expRow(i)).join("")}</ul></li>`}).join("")}
 function render(){
   const m=$("month").value, sal=salOf(m);
   const its=S.items.filter(i=>i.m===m);
@@ -340,7 +345,7 @@ function render(){
   $("mchip").value=m.slice(5,7);
   $("lg").innerHTML=ct.filter(x=>x[1]>0).map(([c,v])=>`<li><i class="dot" style="background:${COL[c]}"></i><div><b>${c}</b><small>${e2(v)}</small></div><em>${(v/tot*100).toFixed(1).replace(".",",")}%</em></li>`).join("")||'<li class="ks">Nessuna spesa in questo mese</li>';
 
-  renderRec();renderSal();renderCnt();renderTop();$("list").innerHTML=its.length?its.slice().reverse().map(i=>i.id==editId?editRow(i):`<li class="row"><span>${esc(i.d)}</span><span class="amt">${eur2(i.a)}</span><span class="acts"><button class="mini ic" data-edit="${i.id}" aria-label="Modifica ${esc(i.d)}" title="Modifica">${IC_EDIT}</button><button class="mini ic del" data-del="${i.id}" aria-label="Elimina ${esc(i.d)}" title="Elimina">${IC_DEL}</button></span><small>${i.c}${i.dt?", "+dl(i.dt):""} ${i.s==="plan"?'<span class="tag">preventivata</span> <button class="mini" data-pay="'+i.id+'">Segna come pagata</button>':'<span class="tag paid">pagata</span> <button class="mini" data-unpay="'+i.id+'">Segna come preventivata</button>'}</small></li>`).join(""):'<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima qui sopra.</li>';
+  renderRec();renderSal();renderCnt();renderTop();$("list").innerHTML=renderGroups(its);
 
   $("cats").innerHTML=ord().map((c,ix,arr)=>{
     const p=sum(m,i=>i.c===c&&i.s==="paid"),q=sum(m,i=>i.c===c&&i.s==="plan");
@@ -406,6 +411,7 @@ $("stmo").addEventListener("change",e=>{ST.mo=e.target.value;renderStats()});
 $("sty").addEventListener("change",e=>{ST.y=+e.target.value;renderStats()});
 document.addEventListener("click",e=>{
   const t=e.target.closest?(e.target.closest("button,[data-view]")||e.target):e.target;
+  if(!e.target.closest("button,input,select,a")){const xr=e.target.closest("li[data-rowedit]");if(xr){openModal("edit-exp",xr.dataset.rowedit);return}}
   if(t.dataset.view)show(t.dataset.view);
   if(t.dataset.stm){ST.mode=t.dataset.stm;renderStats()}
   if(t.dataset.tg2)setExpOpen($("f").hidden);
@@ -431,14 +437,15 @@ document.addEventListener("click",e=>{
   if(t.dataset.exdl){const b=new Blob([$("exa").value],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="spese-backup-"+mk(new Date())+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
   if(t.dataset.imgo)doImport();
   if(t.dataset.pick&&$("imf"))$("imf").click();
-  if(t.dataset.col){S.col=S.col||{};S.col[t.dataset.col]=!S.col[t.dataset.col];save();applyCol()}
   if(t.dataset.new)openNewExp(t.dataset.new==="rec");
   if(t.dataset.redit)openModal("edit-rec",t.dataset.redit);
   if(t.dataset.mclose!==undefined||t.id==="mod")closeModal();
   if(t.dataset.mdel&&modal){if(modal.kind==="del-rec"){S.rec=S.rec.filter(r=>r.id!==modal.id);S.items=S.items.filter(i=>!(i.rid===modal.id&&i.s==="plan"))}else{const it=S.items.find(i=>i.id==modal.id);if(it&&it.rid){const r=S.rec.find(x=>x.id===it.rid);if(r)(r.skip=r.skip||[]).push(it.m)}S.items=S.items.filter(i=>i.id!=modal.id)}save();closeModal();render()}
   if(t.dataset.yr){const [yy,mm]=$("month").value.split("-"),ny=+yy+parseInt(t.dataset.yr);if(ny>=2026){$("month").value=ny+"-"+mm;syncSal();ensureRec();render();renderSalEd()}}
   if(t.dataset.mv){const o=ord(),i=o.indexOf(t.dataset.mv),j=i+parseInt(t.dataset.dir);if(j>=0&&j<o.length){[o[i],o[j]]=[o[j],o[i]];S.order=o;save();render()}}
+  if(t.dataset.cg){cgOpen[t.dataset.cg]=!cgOpen[t.dataset.cg];render();lockHome()}
   if(t.dataset.edit)openModal("edit-exp",t.dataset.edit);
+  if(t.dataset.mreq&&modal&&modal.kind==="edit-exp"){openConfirm("del-exp",modal.id)}
   if(t.dataset.cancel){editId=null;render()}
   if(t.dataset.save){const li=t.closest("li"),it=S.items.find(i=>i.id==t.dataset.save);const v=k=>li.querySelector('[data-f="'+k+'"]').value;const a=parseFloat(v("a"));if(it&&v("d").trim()&&a>=0){it.d=v("d").trim();it.a=a;it.c=v("c");editId=null;save();render()}}
   if(t.dataset.del)openConfirm("del-exp",t.dataset.del);
