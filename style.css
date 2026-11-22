@@ -364,3 +364,21 @@ html.hl,html.hl body{overflow:hidden;height:100%;overscroll-behavior:none}.app{b
 html.nosb #sb{display:none!important}
 @media (max-width:560px){.dbody{flex-wrap:nowrap;gap:16px}.dist .donut{width:132px;height:132px}.dist .hole{inset:28px;font-size:10px}.dist .hole b{font-size:14px}.dl{min-width:0;gap:11px}.dl li{gap:8px}.dl b{font-size:13px}.dl small{font-size:12px}.dl em{font-size:12px}}
 @media (max-width:380px){.dist .mchip{padding-left:10px;padding-right:10px}.hdr nav button{font-size:8.8px}}
+.cg{border-top:1px solid var(--line)}.cg:first-child{border-top:0}
+.cgh{width:100%;display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;background:none;border:0;color:inherit;font:inherit;padding:13px 0;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cgh .dot{width:10px;height:10px;border-radius:50%;margin:0}
+.cgn{font-weight:700;font-size:15px}.cgn .cnt{margin-left:6px}
+.cgh .amt{font-weight:700}
+.cgc{display:inline-flex;color:var(--mute)}.cgc svg{width:18px;height:18px}
+.cgl{list-style:none;margin:0 0 8px;padding:0 0 0 20px}
+.cgl .row:first-child{border-top:0}
+.xdt{color:var(--mute);font-weight:600;font-size:13px;margin-right:6px;font-variant-numeric:tabular-nums}
+.cgl{padding-left:14px}.cgl .row{padding:9px 0}.cgl .row small{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cgl .row small .mini{font-size:12px;padding:5px 10px;min-height:0;white-space:nowrap;border-radius:99px}.cgl .row small .tag{font-size:12px}
+.cgl .row{grid-template-columns:minmax(0,1fr) auto auto;gap:6px 8px}.cgl .row small{grid-column:1/-1}.cgl .row .acts{gap:6px}
+.new{white-space:nowrap;flex:none}
+.mbox.sheet #mt:empty{display:none}.mbox.sheet .dh:has(#mt:empty){justify-content:flex-end;margin-bottom:10px!important}
+.mbox #mbody{padding:4px;margin:-4px}
+.row.xr{cursor:pointer;-webkit-tap-highlight-color:transparent}.row.xr:active{background:rgba(111,211,230,.07)}@media (hover:hover){.row.xr:hover{background:rgba(111,211,230,.05)}}
+.macts{flex-wrap:wrap}.macts .mini,.macts .main{white-space:nowrap}
+@media (max-width:420px){.macts:has([data-mreq]) [data-mclose]{order:3;flex:1 0 100%}}
+.cgl .row.xr{grid-template-columns:minmax(0,1fr) auto}
