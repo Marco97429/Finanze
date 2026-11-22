@@ -144,9 +144,35 @@ const CI={
  Telefono:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>'};
 const SVGO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
 function catIcon(c){return SVGO+(CI[c]||'<path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1"/>')+'</svg>'}
-const IC_OK=SVGO+'<path d="M5 12l5 5L20 7"/></svg>',IC_BK=SVGO+'<path d="M21 5H9l-6 7 6 7h12a1 1 0 001-1V6a1 1 0 00-1-1z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>';
+const IC_CLOCK=SVGO+'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',IC_OK=SVGO+'<path d="M5 12l5 5L20 7"/></svg>',IC_BK=SVGO+'<path d="M21 5H9l-6 7 6 7h12a1 1 0 001-1V6a1 1 0 00-1-1z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>';
 let ne=null;
 function neVal(){return parseFloat((ne.amt||"0").replace(",","."))||0}
+const WH=34,WMN=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+let wBusy=false,wTimer=0;
+function wCol(k){return document.querySelector('#ndw [data-w="'+k+'"]')}
+function wFill(k,items,sel){const c=wCol(k);c.innerHTML=items.map(([v,t])=>`<div class="dwi" role="option" data-v="${v}" aria-selected="${v===sel}">${t}</div>`).join("");return c}
+function wVal(k){const c=wCol(k),i=Math.min(c.children.length-1,Math.max(0,Math.round(c.scrollTop/WH)));return +c.children[i].dataset.v}
+function wGo(k,v,smooth){const c=wCol(k),i=[...c.children].findIndex(x=>+x.dataset.v===v);if(i<0)return;c.scrollTo({top:i*WH,behavior:smooth?"smooth":"auto"});[...c.children].forEach((x,j)=>x.setAttribute("aria-selected",j===i))}
+function wDays(y,m,d){const n=new Date(y,m,0).getDate();wFill("d",Array.from({length:n},(_,i)=>[i+1,String(i+1).padStart(2,"0")]),d);return Math.min(d,n)}
+function wSet(ymd){const [y,m,d]=ymd.split("-").map(Number);wBusy=true;
+  wFill("m",WMN.map((t,i)=>[i+1,t]),m);wFill("y",Array.from({length:10},(_,i)=>[2026+i,String(2026+i)]),y);const dd=wDays(y,m,d);
+  wGo("d",dd);wGo("m",m);wGo("y",y);$("ndd").value=y+"-"+String(m).padStart(2,"0")+"-"+String(dd).padStart(2,"0");setTimeout(()=>{wBusy=false},80)}
+function wRead(){if(wBusy)return;let y=wVal("y"),m=wVal("m"),d=wVal("d");const n=new Date(y,m,0).getDate();
+  if(wCol("d").children.length!==n){wBusy=true;d=Math.min(d,n);wDays(y,m,d);wGo("d",d);setTimeout(()=>{wBusy=false},80)}
+  const v=y+"-"+String(m).padStart(2,"0")+"-"+String(Math.min(d,n)).padStart(2,"0");
+  ["d","m","y"].forEach(k=>{const c=wCol(k),i=Math.round(c.scrollTop/WH);[...c.children].forEach((x,j)=>x.setAttribute("aria-selected",j===i))});
+  if($("ndd").value!==v){$("ndd").value=v;$("ndw").dataset.val=v;$("ndd").dispatchEvent(new Event("input"));ndSum()}}
+function wheelInit(){const w=$("ndw");if(!w||w.dataset.ok==="1"&&w.dataset.val===$("ndd").value)return;
+  if(!w.dataset.ok){w.dataset.ok="1";
+    w.addEventListener("scroll",()=>{clearTimeout(wTimer);wTimer=setTimeout(wRead,90)},true);
+    w.addEventListener("click",e=>{const it=e.target.closest(".dwi");if(!it)return;const c=it.parentNode;c.scrollTo({top:[...c.children].indexOf(it)*WH,behavior:"smooth"})});
+    w.addEventListener("keydown",e=>{const c=e.target.closest&&e.target.closest(".dwcol");if(!c||(e.key!=="ArrowUp"&&e.key!=="ArrowDown"))return;e.preventDefault();c.scrollBy({top:(e.key==="ArrowDown"?1:-1)*WH,behavior:"smooth"})})}
+  w.dataset.val=$("ndd").value;wSet($("ndd").value||NYMD(new Date()))}
+function ndSum(){const v=$("ndd").value;if(!v||!$("ndsum"))return;const [y,m,d]=v.split("-").map(Number),t=WMN[m-1];$("ndsum").textContent=d+" "+t[0].toUpperCase()+t.slice(1)+" "+y}
+function wOpen(){const w=$("ndw");if(!w||!w.hidden)return;$("ndsum").hidden=true;w.hidden=false;delete w.dataset.val;wheelInit()}
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.id==="ndsum"){e.preventDefault();wOpen()}else if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("ncat")){e.preventDefault();e.target.click()}});
+function ncClose(){const n=$("nchips");if(n&&!n.hidden){n.hidden=true;const c=document.querySelector(".ncat[data-ncedit]");if(c)c.setAttribute("aria-expanded","false")}}
+function wClose(){const w=$("ndw");if(!w||w.hidden)return;w.hidden=true;$("ndsum").hidden=false;ndSum()}
 function neDate(){const t=new Date();if(ne.dm==="yest")t.setDate(t.getDate()-1);if(ne.dm==="pick")return $("ndd").value||NYMD(new Date());return NYMD(t)}
 function neUpdate(){
   $("nval").textContent=ne.amt||"0,00";$("nval").classList.toggle("dim",!ne.amt);
@@ -157,7 +183,7 @@ function neUpdate(){
   document.querySelectorAll("[data-nm]").forEach(b=>b.classList.toggle("on",b.dataset.nm===ne.dm));
   document.querySelectorAll("[data-ns]").forEach(b=>b.classList.toggle("on",b.dataset.ns===ne.st));
   document.querySelectorAll("[data-nc]").forEach(b=>b.classList.toggle("on",b.dataset.nc===ne.cat));
-  if(!ne.rec)$("ndd").hidden=ne.dm!=="pick";
+  if(!ne.rec)ndSum()
   $("nci").innerHTML=catIcon(ne.cat);$("ncn").textContent=ne.cat;$("ncl").textContent=ne.sug?"Categoria suggerita:":"Categoria:"}
 function neDesc(){
   if(!ne.manual){const g=suggestCat($("nd").value);
@@ -181,11 +207,11 @@ function neSave(){
   save();closeModal();render()}
 function openNewExp(rec){
   const cur=mk(new Date()),vm=$("month").value;
-  ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0],sug:false,manual:false,st:"paid",dm:vm===cur?"today":"pick",rec:!!rec};
+  ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0],sug:false,manual:false,st:"paid",dm:"pick",rec:!!rec};
   modal={kind:"new-exp-sheet"};
   document.querySelector(".mbox").classList.add("sheet");
   $("mt").textContent=rec?"Nuova spesa ricorrente":"";document.querySelector(".mbox").setAttribute("aria-label","Nuova spesa");
-  $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="seg" role="group" aria-label="Data della spesa"><button type="button" data-nm="today">Oggi</button><button type="button" data-nm="yest">Ieri</button><button type="button" data-nm="pick">Scegli data</button></div><input type="date" id="ndd" class="ninp" min="2026-01-01" max="2035-12-31" aria-label="Data della spesa" hidden>`}<div class="ncat"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><button type="button" class="ned" data-ncedit="1" aria-label="Cambia categoria">${IC_EDIT}</button></div><div class="nchips" id="nchips" hidden>${ord().map(c=>`<button type="button" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button></div>`;
+  $("mbody").innerHTML=`<div class="ns"><label class="nf"><span>Spesa</span><input id="nd" class="ninp" placeholder="Es. Pizza" autocomplete="off" maxlength="60"></label>${rec?`<div class="nper"><label>Dal mese<select id="nfrom" class="ninp">${MOPT}</select></label><label>Fino al mese<select id="nto" class="ninp"><option value="">Senza scadenza</option>${MOPT}</select></label><div class="err" id="nerr" role="alert"></div></div>`:`<div class="ncat ndate"><span class="nci">${IC_CLOCK}</span><div class="nct"><small>Scegli data:</small><b class="ndsum" id="ndsum" role="button" tabindex="0" aria-label="Modifica la data della spesa"></b><div class="dw" id="ndw" role="group" aria-label="Data della spesa" hidden><div class="dwsel"></div><div class="dwcol" data-w="d" role="listbox" aria-label="Giorno" tabindex="0"></div><div class="dwcol" data-w="m" role="listbox" aria-label="Mese" tabindex="0"></div><div class="dwcol" data-w="y" role="listbox" aria-label="Anno" tabindex="0"></div></div></div></div><input type="hidden" id="ndd">`}<div class="ncwrap"><div class="ncat" data-ncedit="1" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Cambia categoria"><span class="nci" id="nci"></span><div class="nct"><small id="ncl"></small><b id="ncn"></b></div><span class="ncc">${IC_DN}</span></div><div class="nchips" id="nchips" role="listbox" hidden>${ord().map(c=>`<button type="button" role="option" data-nc="${c}">${catIcon(c)}${c}</button>`).join("")}</div></div><div class="namt"><span>${rec?"Importo mensile":"Importo"}</span><div class="nvv"><i>€</i><b id="nval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",",","0","bk"].map(k=>`<button type="button" data-k="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="nsave" data-nsave="1" disabled><span>Salva spesa</span>${IC_OK}</button></div>`;
   if(rec)$("nfrom").value=cur;else $("ndd").value=vm===cur?NYMD(new Date()):(vm<"2026-01"?"2026-01":vm)+"-01";
   $("nd").addEventListener("input",neDesc);if(rec){$("nfrom").addEventListener("change",neUpdate);$("nto").addEventListener("change",neUpdate)}else $("ndd").addEventListener("input",neUpdate);
   $("mod").hidden=false;neUpdate();
@@ -424,6 +450,8 @@ function renderStats(){setTimeout(lockHome,0);
 $("stmo").addEventListener("change",e=>{ST.mo=e.target.value;renderStats()});
 $("sty").addEventListener("change",e=>{ST.y=+e.target.value;renderStats()});
 document.addEventListener("click",e=>{
+  if(e.target.closest&&e.target.closest("#ndsum")){wOpen();ncClose()}else if(modal&&modal.kind==="new-exp-sheet"&&$("ndw")&&!$("ndw").hidden&&!e.target.closest("#ndw"))wClose();
+  if(modal&&modal.kind==="new-exp-sheet"&&$("nchips")){if(e.target.closest&&e.target.closest(".ncat[data-ncedit]")){const o=$("nchips").hidden;if(o)wClose();$("nchips").hidden=!o;document.querySelector(".ncat[data-ncedit]").setAttribute("aria-expanded",o)}else if(!e.target.closest(".nchips"))ncClose()}
   const t=e.target.closest?(e.target.closest("button,[data-view]")||e.target):e.target;
   if(!e.target.closest("button,input,select,a")){const xr=e.target.closest("li[data-rowedit]");if(xr){openModal("edit-exp",xr.dataset.rowedit);return}}
   if(t.dataset.view)show(t.dataset.view);
@@ -432,8 +460,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.nm&&ne){ne.dm=t.dataset.nm;if(ne.dm==="pick"&&!$("ndd").value)$("ndd").value=NYMD(new Date());neUpdate()}
   if(t.dataset.ns&&ne){ne.st=t.dataset.ns;neUpdate()}
   if(t.dataset.k&&ne)nePress(t.dataset.k);
-  if(t.dataset.ncedit)$("nchips").hidden=!$("nchips").hidden;
-  if(t.dataset.nc&&ne){ne.cat=t.dataset.nc;ne.manual=true;ne.sug=false;$("nchips").hidden=true;neUpdate()}
+  if(t.dataset.nc&&ne){ne.cat=t.dataset.nc;ne.manual=true;ne.sug=false;ncClose();neUpdate()}
   if(t.dataset.nsave&&ne)neSave();
   if(t.dataset.sm!==undefined)openSalAmt(t.dataset.sm);
   if(t.dataset.lv!==undefined&&t.tagName==="INPUT")openBudAmt(t.dataset.lv);
