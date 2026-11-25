@@ -1,5 +1,5 @@
 // Cambia il numero di versione ogni volta che aggiorni i file dell'app.
-const V = "finanze-v115";
+const V = "finanze-v117";
 const FILES = ["./", "index.html", "style.css", "app.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png",
   "fonts/Poppins-Regular.ttf", "fonts/Poppins-Medium.ttf", "fonts/Poppins-SemiBold.ttf", "fonts/Poppins-Bold.ttf", "fonts/Poppins-ExtraBold.ttf"];

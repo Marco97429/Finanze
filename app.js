@@ -293,18 +293,21 @@ function recRow(r){const f=r.f||"m",fd=x=>dFmt.format(new Date(+x.slice(0,4),+x.
   return `<li class="row xr" data-recedit="${r.id}"><span>${esc(r.d)}</span><span class="amt">${eur2(r.a)}/${FQL[f]}</span><small>${r.t==="in"?(r.c?esc(r.c):"Entrata"):esc(r.c)}${f!=="m"?" · "+FQN[f]:""}, dal ${st} ${en?"al "+ens:"senza scadenza"}</small></li>`}
 function recRange(r){const fd=x=>dFmt.format(new Date(+x.slice(0,4),+x.slice(5,7)-1,+x.slice(8,10))),st=recStart(r),en=r.end!==undefined?r.end:(r.to?(()=>{const [y,o]=r.to.split("-").map(Number);return r.to+"-"+String(new Date(y,o,0).getDate()).padStart(2,"0")})():"");
   return "Dal "+fd(st)+(en?" al "+fd(en):" senza scadenza")}
-function recRow2(r){const f=r.f||"m";
-  return `<li class="row xr rr" data-recedit="${r.id}"><span class="rrn">${esc(r.d)}</span><span class="amt">${eur2(r.a)}/${FQL[f]}</span><span class="rrd">${recRange(r)}</span></li>`}
+function recRow2(r){const inc=r.t==="in",ic=inc?S.ci.find(c=>c.n===r.c):null,cn=inc?(r.c||"Entrata"):r.c,bg=inc?(ic?ic.c:"#34c28a"):(COL[r.c]||"#8892a6"),em=inc?(ic?ic.e:"\u{1F4B6}"):(CEMO[r.c]||"\u{1F3F7}️");
+  return `<li class="row xr" data-recedit="${r.id}"><span class="xic" style="background:${bg}"><span class="cem" aria-hidden="true">${esc(em)}</span></span><span class="xl"><span class="xn">${esc(r.d)}</span><span class="xcat">${esc(cn)}</span></span><span class="amt">${inc?"+":"-"}${eur2(r.a)}</span></li>`}
+const FQG={m:"Mensili",q:"Trimestrali",s:"Semestrali",y:"Annuali"};
+function recGroups(list,t){
+  return ["m","q","s","y"].map(f=>{
+    const g=list.filter(r=>(r.f||"m")===f).sort((a,b)=>{const x=recStart(a),y=recStart(b);return x<y?1:x>y?-1:(a.id>b.id?-1:a.id<b.id?1:0)});
+    if(!g.length)return "";
+    const k="r"+t+f,open=dgOpen[k]!==false,tot=g.reduce((x,r)=>x+r.a,0),sg=t==="i"?"+":"-";
+    return `<li class="dg"><button type="button" class="dgh" data-dg="${k}" aria-expanded="${open}" aria-label="${FQG[f]}: ${g.length} movimenti, totale ${eur2(tot)}"><span class="dgd">${FQG[f]}</span><span class="amt">${sg}${eur2(tot)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="dgl"${open?"":" hidden"}>${g.map(recRow2).join("")}</ul></li>`}).join("")}
 function renderRec(){
   const outs=S.rec.filter(r=>r.t!=="in");
-  $("rec2").innerHTML=outs.length?ord().map(c=>{
-    const g=outs.filter(r=>r.c===c).sort((a,b)=>{const x=recStart(a),y=recStart(b);return x<y?1:x>y?-1:(a.id>b.id?-1:a.id<b.id?1:0)});
-    if(!g.length)return "";
-    const k="r:"+c,open=!!cgOpen[k],t=g.reduce((x,r)=>x+r.a,0);
-    return `<li class="cg"><button type="button" class="cgh cgn3" data-cg="${k}" aria-expanded="${open}" aria-label="${c}: ${g.length} spese ricorrenti"><i class="dot" style="background:${COL[c]}"></i><span class="cgn">${c} <span class="cnt">${g.length}</span></span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="cgl"${open?"":" hidden"}>${g.map(recRow2).join("")}</ul></li>`}).join(""):'<li class="empty">Nessuna spesa ricorrente.</li>';renderInc()}
+  $("rec2").innerHTML=outs.length?recGroups(outs,"o"):'<li class="empty">Nessuna spesa ricorrente.</li>';renderInc()}
 function renderInc(){
   const ins=S.rec.filter(r=>r.t==="in");
-  $("rinc").innerHTML=ins.length?ins.map(recRow2).join(""):'<li class="empty">Nessuna entrata ricorrente.</li>'}
+  $("rinc").innerHTML=ins.length?recGroups(ins,"i"):'<li class="empty">Nessuna entrata ricorrente.</li>'}
 const MOPT=Array.from({length:60},(_,i)=>{const d=new Date(2026,i,1),n=new Intl.DateTimeFormat("it-IT",{month:"long",year:"numeric"}).format(d);return `<option value="${mk(d)}">${n[0].toUpperCase()+n.slice(1)}</option>`}).join("");
 const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>';
 const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
@@ -634,22 +637,25 @@ document.addEventListener("change",e=>{if(e.target.id==="syr"||e.target.id==="py
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.sm;if(!k)return;
   const v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[k];else{const c=Math.min(Math.max(0,v),1e6);if(c!==v)e.target.value=c;S.sals[k]=c}save();updPh();render()});
 
-const cgOpen={};
+const cgOpen={};let dgOpen={};
 function fdt(i){return i.dt?i.dt.slice(8,10)+"/"+i.dt.slice(5,7)+"/"+i.dt.slice(0,4):i.m.slice(5,7)+"/"+i.m.slice(0,4)}
 function openRecInfo(it){
   modal={kind:"rec-info"};
   $("mt").textContent="Spesa ricorrente";
   $("mbody").innerHTML=`<p class="mtxt"><b>${esc(it.d)}</b> è una spesa ricorrente: non si può modificare o eliminare da qui. Per gestirla vai nella sezione <b>Ricorrenti</b>.</p><div class="macts"><button type="button" class="mini" data-mclose>Chiudi</button><button type="button" class="main" data-view="ricorrenti" data-mclose>Vai a Ricorrenti</button></div>`;
   $("mod").hidden=false}
-function expRow(i){return `<li class="row xr" data-rowedit="${i.id}"><span class="xl"><b class="xdt">${fdt(i)}</b><span class="xn">${esc(i.d)}</span>${i.rid?'<i class="rtg">Spesa ricorrente</i>':""}</span><span class="amt">${eur2(i.a)}</span></li>`}
+function expRow(i){const c=i.c;return `<li class="row xr" data-rowedit="${i.id}"><span class="xic" style="background:${COL[c]||"#8892a6"}">${catIcon(c)}</span><span class="xl"><span class="xn">${esc(i.d)}</span><span class="xcat">${esc(c)}</span>${i.rid?'<i class="rtg">Spesa ricorrente</i>':""}</span><span class="amt">-${eur2(i.a)}</span></li>`}
+const DGM=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"],DGW=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
+function dgKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function dgLabel(k){const n=new Date(),t=dgKey(n);n.setDate(n.getDate()-1);if(k===t)return"Oggi";if(k===dgKey(n))return"Ieri";const d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10));return DGW[d.getDay()]+", "+d.getDate()+" "+DGM[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():"")}
 function renderGroups(its){
   if(!its.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con NUOVA SPESA.</li>';
-  const key=i=>i.dt||(i.m+"-01");
-  return ord().map(c=>{
-    const g=its.filter(i=>i.c===c).sort((a,b)=>key(a)<key(b)?1:key(a)>key(b)?-1:(a.id>b.id?-1:a.id<b.id?1:0));
-    if(!g.length)return "";
-    const open=!!cgOpen[c]||g.some(i=>i.id==editId),t=g.reduce((x,i)=>x+i.a,0);
-    return `<li class="cg"><button type="button" class="cgh" data-cg="${c}" aria-expanded="${open}" aria-label="${c}: ${g.length} spese, totale ${eur2(t)}"><i class="dot" style="background:${COL[c]}"></i><span class="cgn">${c} <span class="cnt">${g.length}</span></span><span class="amt">${eur2(t)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="cgl"${open?"":" hidden"}>${g.map(i=>i.id==editId?editRow(i):expRow(i)).join("")}</ul></li>`}).join("")}
+  const key=i=>i.dt||(i.m+"-01"),days={};
+  its.forEach(i=>{(days[key(i)]=days[key(i)]||[]).push(i)});
+  return Object.keys(days).sort().reverse().map(k=>{
+    const g=days[k].sort((a,b)=>a.id>b.id?-1:a.id<b.id?1:0);
+    const open=dgOpen[k]!==false||g.some(i=>i.id==editId),t=g.reduce((x,i)=>x+i.a,0),lb=dgLabel(k);
+    return `<li class="dg"><button type="button" class="dgh" data-dg="${k}" aria-expanded="${open}" aria-label="${lb}: ${g.length} spese, totale ${eur2(t)}"><span class="dgd">${lb}</span><span class="amt">-${eur2(t)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="dgl"${open?"":" hidden"}>${g.map(i=>i.id==editId?editRow(i):expRow(i)).join("")}</ul></li>`}).join("")}
 function render(){
   const m=$("month").value, sal=salOf(m);
   const its=S.items.filter(i=>i.m===m);
@@ -811,6 +817,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.yr){const [yy,mm]=$("month").value.split("-"),ny=+yy+parseInt(t.dataset.yr);if(ny>=2026){$("month").value=ny+"-"+mm;syncSal();ensureRec();render();renderSalEd()}}
   if(t.dataset.mv){const o=ord(),i=o.indexOf(t.dataset.mv),j=i+parseInt(t.dataset.dir);if(j>=0&&j<o.length){[o[i],o[j]]=[o[j],o[i]];S.order=o;save();render()}}
   if(t.dataset.cg){cgOpen[t.dataset.cg]=!cgOpen[t.dataset.cg];render();lockHome()}
+  if(t.dataset.dg){dgOpen[t.dataset.dg]=dgOpen[t.dataset.dg]===false;render();lockHome()}
   if(t.dataset.edit)openNewExp(false,t.dataset.edit);
   if(t.dataset.nedel&&ne&&ne.edit!==null)openConfirm(ne.rec?"del-rec":ne.sch?"del-sch":"del-exp",ne.edit);
   if(t.dataset.mreq&&modal&&modal.kind==="edit-exp"){openConfirm("del-exp",modal.id)}
