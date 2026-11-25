@@ -1,5 +1,5 @@
 // Cambia il numero di versione ogni volta che aggiorni i file dell'app.
-const V = "finanze-v87";
+const V = "finanze-v100";
 const FILES = ["./", "index.html", "style.css", "app.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png",
   "fonts/Poppins-Regular.ttf", "fonts/Poppins-Medium.ttf", "fonts/Poppins-SemiBold.ttf", "fonts/Poppins-Bold.ttf", "fonts/Poppins-ExtraBold.ttf"];
@@ -15,4 +15,11 @@ self.addEventListener("fetch", e => {
   e.respondWith(fetch(e.request, { cache: "no-cache" }).then(res => {
     const cp = res.clone(); caches.open(V).then(c => c.put(e.request, cp)); return res;
   }).catch(() => caches.match(e.request).then(r => r || caches.match("index.html"))));
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(l => {
+    for (const c of l) { if ("focus" in c) return c.focus(); }
+    return self.clients.openWindow("./");
+  }));
 });
