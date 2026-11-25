@@ -76,7 +76,6 @@ input,select,button{background:#f4f7fc}
   </nav>
 </header>
 <main>
-  <div class="greet" id="greet"><div><h1 class="gh" id="tpgh"></h1><p class="gs">Il tuo mese finanziario</p></div><div class="gact"><button class="bell" id="tptheme" type="button" data-theme-toggle="1" aria-label="Attiva Dark mode"></button><button class="bell" id="tpbell" type="button" data-bell="1" aria-label="Notifiche"><span class="bdg" id="tpbdg" hidden></span></button></div></div>
   <div class="mrow" id="mrow"><div class="shd" id="pill" hidden><label class="smini syr"><small>Mese</small><select id="pmo" data-mo="1" aria-label="Mese visualizzato"></select></label><label class="smini syr"><small>Anno</small><select id="pyr" aria-label="Anno visualizzato"></select></label></div>
   <div class="top">
     <input type="month" id="month" hidden>
@@ -85,7 +84,7 @@ input,select,button{background:#f4f7fc}
 
   <section id="v-home">
     <div class="card tpc">
-      <div class="tpr"><span class="tpic" id="tpic"></span><div class="tpt"><small>Saldo totale</small><b id="tpbal"></b></div><button class="eye" id="tpeye" type="button" data-eye="1"></button></div>
+      <div class="tpr"><span class="tpic" id="tpic"></span><div class="tpt"><small>Saldo totale</small><b id="tpbal"></b></div><button class="eye" id="tpeye" type="button" data-eye="1"></button><button class="bell" id="tpbell" type="button" data-bell="1" aria-label="Notifiche"><span class="bdg" id="tpbdg" hidden></span></button></div>
       <hr class="tpdv">
       <div class="tph"><span><span id="tphs"></span>Disponibile questo mese</span><span class="tpbd" id="tpbd"></span></div>
       <div class="tpbig" id="tpav"></div>
@@ -130,7 +129,7 @@ input,select,button{background:#f4f7fc}
   </section>
 
   <section id="v-categorie" hidden>
-    <div class="aph"><button type="button" class="apb" data-back="set" aria-label="Indietro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 class="apt">Categorie</h1><div class="cact"><button type="button" class="apb" id="ceye" data-cat-eye="1" aria-label="Mostra o nascondi i suggerimenti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 4.5l15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><button type="button" class="apb" id="cedit" data-cat-edit="1" aria-label="Riordina le categorie"></button></div></div>
+    <div class="aph"><button type="button" class="apb" data-back="set" aria-label="Indietro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 class="apt">Categorie</h1><div class="cact"><button type="button" class="apb" id="ceye" data-cat-eye="1" aria-label="Mostra o nascondi i suggerimenti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path id="cslash" d="M4.5 4.5l15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><button type="button" class="apb" id="cedit" data-cat-edit="1" aria-label="Riordina le categorie"></button></div></div>
     <div id="catl"></div>
     <div class="cbar"><div class="nem" id="ctabs"><button type="button" data-cat-tab="x">Spesa</button><button type="button" data-cat-tab="i">Entrata</button></div><button type="button" class="cnew" data-cat-new="1">+ Nuova Categoria</button></div>
   </section>
