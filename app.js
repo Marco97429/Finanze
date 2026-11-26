@@ -1,4 +1,4 @@
-const CATS={Casa:30,Bollette:8,Macchina:10,Cibo:15,Vacanze:8,Regali:4,Telefono:3};
+const CATS={Casa:30,Bollette:8,Macchina:10,Cibo:15,Vacanze:8,Regali:4,Telefono:3},BUILTIN=Object.keys(CATS);
 /* Notifiche e Face ID (tutto locale) */
 const LSG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},LSS=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let NOTI=LSG("spese-noti-v1")==="1",AUTH=LSG("spese-auth-v1")||"",LKT=0,LKB=false;
@@ -121,12 +121,12 @@ const IC_CHK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4
 const IC_PLS='<svg class="cpl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const IC_TRAY='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l2-6.5A2 2 0 0 1 7.9 5h8.2a2 2 0 0 1 1.9 1.5L20 13v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 13h4.5l1 2h5l1-2H20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 function catList(){return CT==="x"?ord().map(n=>({n,e:CEMO[n]||"\u{1F3F7}\uFE0F",c:COL[n]})):S.ci}
-function catSugList(){return CT==="x"?CSUGX.filter(z=>!Object.keys(CATS).some(k=>k.toLowerCase()===z[0].toLowerCase())):CSUGI.filter(z=>!S.ci.some(k=>k.n.toLowerCase()===z[0].toLowerCase()))}
+function catSugList(){return CT==="x"?BSUG.concat(CSUGX).filter(z=>!Object.keys(CATS).some(k=>k.toLowerCase()===z[0].toLowerCase())&&!S.cx.some(k=>k.s===z[0])):CSUGI.filter(z=>!S.ci.some(k=>k.n.toLowerCase()===z[0].toLowerCase()||k.s===z[0]))}
 function catRender(){
   const l=$("catl");if(!l)return;const x=CT==="x",list=catList(),sug=(CEDIT||S.csh)?[]:catSugList();
   l.classList.toggle("edm",CEDIT);
   let h=`<h2 class="seth">${x?"CATEGORIE DI SPESA":"CATEGORIE DI ENTRATA"}</h2>`;
-  h+=list.length?`<div class="card setc cul2" id="catul">${list.map(c=>`<div class="cr" data-cn="${esc(c.n)}"><span class="ce">${esc(c.e)}</span><span class="cn2">${esc(c.n)}</span><i class="csw" style="background:${c.c}"></i><span class="cgr">${IC_GRIP}</span></div>`).join("")}</div>`:`<div class="card cempty">${IC_TRAY}Nessuna categoria di ${x?"spesa":"entrata"} trovata: premi \u201C+ Nuova Categoria\u201D per aggiungerne qualcuna.</div>`;
+  h+=list.length?`<div class="card setc cul2" id="catul">${list.map(c=>`<div class="cr" data-cn="${esc(c.n)}"><span class="ce">${esc(c.e)}</span><span class="cn2">${esc(c.n)}</span><i class="csw" style="background:${c.c}"></i><span class="cgr">${IC_GRIP}</span></div>`).join("")}</div>`:`<div class="card cempty">${IC_TRAY}Nessuna categoria di ${x?"spesa":"entrata"} trovata: aggiungine una dai suggerimenti oppure premi \u201C+ Nuova Categoria\u201D.</div>`;
   if(sug.length)h+=`<h2 class="seth">SUGGERITE</h2><div class="card setc">${sug.map(z=>`<button type="button" class="cr sg" data-cat-sug="${esc(z[0])}"><span class="ce">${z[1]}</span><span class="cn2">${esc(z[0])}</span>${IC_PLS}</button>`).join("")}</div>`;
   l.innerHTML=h;
   document.querySelectorAll("#ctabs [data-cat-tab]").forEach(b=>b.classList.toggle("on",b.dataset.catTab===CT));
@@ -134,12 +134,12 @@ function catRender(){
   $("ceye").classList.toggle("on",!!S.csh);$("cslash").style.display=S.csh?"":"none";$("ceye").disabled=CEDIT;$("ceye").style.opacity=CEDIT?".45":""}
 function catOpen(){CEDIT=false;catRender()}
 function catName(n){return String(n||"").replace(/[\uFE00-\uFE0F\u20E3\u200D]/g,"").replace(/[^\p{L}\p{M}\p{N}\s'\u2019.\-]/gu,"").replace(/\s+/g," ").trim().slice(0,24)}
-function catAdd(k,n,e,c){
+function catAdd(k,n,e,c,src){
   n=catName(n);if(!n)return"Scrivi il nome della categoria (solo lettere e numeri).";
   const lc=n.toLowerCase();
   if(k==="x"){if(Object.keys(CATS).some(z=>z.toLowerCase()===lc))return"Esiste gi\u00e0 una categoria di spesa con questo nome."}
   else if(S.ci.some(z=>z.n.toLowerCase()===lc))return"Esiste gi\u00e0 una categoria di entrata con questo nome.";
-  const o={n,e:e||"\u{1F3F7}\uFE0F",c:c||CPAL[11]};
+  const o={n,e:e||"\u{1F3F7}\uFE0F",c:c||CPAL[11]};if(src)o.s=src;
   if(k==="x"){S.cx.push(o);regCat(o);S.order=ord()}else S.ci.push(o);
   save();if(k==="x"){$("c").innerHTML=ord().map(z=>`<option>${z}</option>`).join("");reAll()}
   CT=k;catRender();return""}
@@ -170,15 +170,44 @@ function ncEmoji(q){const g=$("emg");if(!g)return;q=(q||"").trim().toLowerCase()
 function ncSync(){if(!NCAT)return;$("ncp").innerHTML=NCAT.e?esc(NCAT.e):"<i>\u263A</i>";$("ncsw").style.background=NCAT.c;
   document.querySelectorAll("[data-nck]").forEach(b=>b.classList.toggle("on",b.dataset.nck===NCAT.k));
   $("ncpal").innerHTML=CPAL.map(c=>`<button type="button" data-ncc="${c}" style="background:${c}" aria-label="Colore ${c}">${c===NCAT.c?IC_CHK:""}</button>`).join("")}
-function openCatNew(){
-  modal={kind:"newcat"};NCAT={k:CT,e:"",c:CPAL[11],tab:0};const tt=document.getElementById("toast");if(tt)tt.classList.remove("on");
-  document.querySelector(".mbox").classList.add("sheet");$("mt").textContent="Nuova categoria";
-  $("mbody").innerHTML=`<div class="ns"><div class="nem" style="margin:0 auto 4px"><button type="button" data-nck="x">Spesa</button><button type="button" data-nck="i">Entrata</button></div><div class="nprev" id="ncp"></div><div class="ncpill" id="ncpill" hidden></div><div class="ncrow"><button type="button" class="ncsw" id="ncsw" data-ncsw="1" aria-label="Scegli il colore"></button><input id="ncn" class="ninp" placeholder="Nome categoria" maxlength="24" autocomplete="off" autocapitalize="sentences" aria-label="Nome categoria"><button type="button" class="ncadd" data-ncadd="1" aria-label="Aggiungi categoria">+</button></div><div class="ncpal" id="ncpal" hidden></div><div class="err" id="ncerr" role="alert"></div><input id="nce" class="ninp" type="search" placeholder="Cerca emoji" autocomplete="off" aria-label="Cerca emoji"><div class="emt" id="emt" role="tablist">${EMT.map((t,i)=>`<button type="button" role="tab" data-nct="${i}" aria-label="${t[1]}">${t[0]}</button>`).join("")}</div><div class="emg" id="emg"></div></div>`;
-  ncSync();ncEmoji("");
+function openCatNew(old){
+  const ed=typeof old==="string"?old:"",x=CT==="x",cur=ed?catList().find(z=>z.n===ed):null;
+  if(ed&&!cur)return;
+  modal={kind:"newcat"};NCAT={k:CT,e:cur?cur.e:"",c:cur?cur.c:CPAL[11],tab:0,edit:ed};const tt=document.getElementById("toast");if(tt)tt.classList.remove("on");
+  document.querySelector(".mbox").classList.add("sheet");$("mt").textContent=ed?"Modifica categoria":"Nuova categoria";
+  $("mbody").innerHTML=`<div class="ns">${ed?"":`<div class="nem" style="margin:0 auto 4px"><button type="button" data-nck="x">Spesa</button><button type="button" data-nck="i">Entrata</button></div>`}<div class="nprev" id="ncp"></div><div class="ncpill" id="ncpill" hidden></div><div class="ncrow"><button type="button" class="ncsw" id="ncsw" data-ncsw="1" aria-label="Scegli il colore"></button><input id="ncn" class="ninp" placeholder="Nome categoria" maxlength="24" autocomplete="off" autocapitalize="sentences" aria-label="Nome categoria">${ed?"":`<button type="button" class="ncadd" data-ncadd="1" aria-label="Aggiungi categoria">+</button>`}</div><div class="ncpal" id="ncpal" hidden></div><div class="err" id="ncerr" role="alert"></div>${ed?`<div class="ceacts"><button type="button" class="nbt" data-cecancel="1">Annulla</button><button type="button" class="nbt danger" data-cedel="1">Elimina</button><button type="button" class="nbt ceok" data-cesave="1">Salva</button></div>`:""}<input id="nce" class="ninp" type="search" placeholder="Cerca emoji" autocomplete="off" aria-label="Cerca emoji"><div class="emt" id="emt" role="tablist">${EMT.map((t,i)=>`<button type="button" role="tab" data-nct="${i}" aria-label="${t[1]}">${t[0]}</button>`).join("")}</div><div class="emg" id="emg"></div></div>`;
+  ncSync();ncEmoji("");if(ed)$("ncn").value=ed;
   $("nce").addEventListener("input",e=>ncEmoji(e.target.value));
-  $("ncn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ncAdd()}});
-  $("ncn").addEventListener("input",e=>{$("ncerr").textContent="";const el=e.target,v=el.value.replace(/[\uFE00-\uFE0F\u20E3\u200D]/g,"").replace(/[^\p{L}\p{M}\p{N}\s'\u2019.\-]/gu,"");if(v!==el.value){const pos=el.selectionStart-(el.value.length-v.length);el.value=v;try{el.setSelectionRange(pos,pos)}catch(_){}}});
+  $("ncn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ed?catSave():ncAdd()}});
+  $("ncn").addEventListener("input",e=>{$("ncerr").textContent="";const el=e.target,v=el.value.replace(/[︀-️⃣‍]/g,"").replace(/[^\p{L}\p{M}\p{N}\s'’.\-]/gu,"");if(v!==el.value){const pos=el.selectionStart-(el.value.length-v.length);el.value=v;try{el.setSelectionRange(pos,pos)}catch(_){}}});
   $("mod").hidden=false}
+function catUse(k,n){return k==="x"?S.items.filter(i=>i.c===n).length+S.rec.filter(r=>r.t!=="in"&&r.c===n).length+S.sch.filter(r=>r.t!=="in"&&r.c===n).length:S.rec.filter(r=>r.t==="in"&&r.c===n).length+S.sch.filter(r=>r.t==="in"&&r.c===n).length}
+function catRef(k,a,b){if(k==="x"){S.items.forEach(i=>{if(i.c===a)i.c=b});S.rec.forEach(r=>{if(r.t!=="in"&&r.c===a)r.c=b});S.sch.forEach(r=>{if(r.t!=="in"&&r.c===a)r.c=b})}
+  else{S.rec.forEach(r=>{if(r.t==="in"&&r.c===a)r.c=b});S.sch.forEach(r=>{if(r.t==="in"&&r.c===a)r.c=b})}}
+function catFin(k){save();if(k==="x")$("c").innerHTML=ord().map(z=>`<option>${z}</option>`).join("");closeModal();CT=k;catRender();reAll()}
+function catSave(){if(!NCAT||!NCAT.edit)return;const k=NCAT.k,old=NCAT.edit,n=catName($("ncn").value),lc=n.toLowerCase();
+  const err=m=>{$("ncerr").textContent=m};
+  if(!n)return err("Scrivi il nome della categoria (solo lettere e numeri).");
+  if(k==="x"){if(Object.keys(CATS).some(z=>z!==old&&z.toLowerCase()===lc))return err("Esiste già una categoria di spesa con questo nome.")}
+  else if(S.ci.some(z=>z.n!==old&&z.n.toLowerCase()===lc))return err("Esiste già una categoria di entrata con questo nome.");
+  const o0=(k==="x"?S.cx:S.ci).find(z=>z.n===old),sr=(o0&&o0.s)||(k==="x"&&BUILTIN.includes(old)?old:"");
+  const o={n,e:NCAT.e||"\u{1F3F7}️",c:NCAT.c};if(sr)o.s=sr;
+  if(k==="x"){
+    if(n!==old){const L=S.lim[old];catRef("x",old,n);S.order=ord().map(z=>z===old?n:z);if(S.lastCat===old)S.lastCat=n;if(KW[old]){KW[n]=KW[old];delete KW[old]}
+      catDrop(old);if(BUILTIN.includes(old)&&!S.cdel.includes(old))S.cdel.push(old);S.cx=S.cx.filter(z=>z.n!==old);if(L)S.lim[n]=L}
+    S.cx=S.cx.filter(z=>z.n!==n);S.cx.push(o);regCat(o);S.order=ord()}
+  else{const ix=S.ci.findIndex(z=>z.n===old);if(ix<0)return;S.ci[ix]=o;if(n!==old){catRef("i",old,n);if(S.lastIc===old)S.lastIc=n}}
+  catFin(k)}
+function catDelAsk(){if(!NCAT||!NCAT.edit)return;const k=NCAT.k,old=NCAT.edit,u=catUse(k,old),oth=(k==="x"?ord():S.ci.map(z=>z.n)).filter(z=>z!==old);
+  if(k==="x"&&u&&!oth.length)return($("ncerr").textContent="Questa è l\u2019unica categoria di spesa e viene usata: spostane prima i movimenti.");
+  $("mt").textContent="Elimina categoria";
+  const opts=oth.map(z=>`<option value="${esc(z)}">${esc(z)}</option>`).join("")+(k==="i"?'<option value="">Nessuna categoria</option>':"");
+  $("mbody").innerHTML=`<div class="ns"><p class="cedp">Vuoi eliminare la categoria “${esc(old)}”?${u?` Viene usata da ${u} ${u===1?"movimento":"movimenti"}: scegli dove spostarli.`:""}</p>${u?`<select id="cemv" class="ninp" aria-label="Sposta i movimenti in">${opts}</select>`:""}<div class="ceacts two"><button type="button" class="nbt" data-cedback="1">Annulla</button><button type="button" class="nbt danger" data-cedelok="1">Elimina</button></div></div>`}
+function catDel(){if(!NCAT||!NCAT.edit)return;const k=NCAT.k,old=NCAT.edit,mv=$("cemv");
+  if(mv)catRef(k,old,mv.value);
+  if(k==="x"){catDrop(old);if(BUILTIN.includes(old)&&!S.cdel.includes(old))S.cdel.push(old);S.cx=S.cx.filter(z=>z.n!==old);S.order=(S.order||[]).filter(z=>z!==old);if(S.lastCat===old)delete S.lastCat}
+  else{S.ci=S.ci.filter(z=>z.n!==old);if(S.lastIc===old)delete S.lastIc}
+  catFin(k)}
 function ncAdd(){if(!NCAT)return;const err=catAdd(NCAT.k,$("ncn").value,NCAT.e,NCAT.c);$("ncerr").textContent=err;if(err)return;
   const n=catName($("ncn").value);$("ncn").value="";NCAT.e="";ncSync();ncEmoji($("nce").value);
   const p=$("ncpill");p.textContent="Aggiunta: "+n;p.hidden=false;clearTimeout(p._t);p._t=setTimeout(()=>{p.hidden=true},2200)}
@@ -188,6 +217,7 @@ const SUBV=["appearance","appicon","notif","numentry","currency","categorie"];
 const COL_L={Casa:"#0e9db6",Macchina:"#4f8df7",Cibo:"#f2a33a",Telefono:"#8a6df0",Bollette:"#e86f7c",Vacanze:"#2fb98a",Regali:"#9aa5bd"},COL_D={Casa:"#a8e8f6",Macchina:"#5ec5dc",Cibo:"#3aa0b8",Telefono:"#2f7f93",Bollette:"#7f9ba6",Vacanze:"#5b707a",Regali:"#3d4d55"};
 const COL={...COL_L};
 const CEMO={Casa:"\u{1F3E0}",Bollette:"\u{1F4A1}",Macchina:"\u{1F697}",Cibo:"\u{1F354}",Vacanze:"\u{1F3D6}\uFE0F",Regali:"\u{1F381}",Telefono:"\u{1F4F1}"};
+const BSUG=BUILTIN.map(n=>[n,CEMO[n],COL_L[n]]);
 const TH_L={mute:"#6c7792",grid:"rgba(40,60,110,.1)",gridZ:"rgba(40,60,110,.35)",acc:"#0e9db6",dotIn:"#fff",lbl:"#1b2333",bar:"#a7dbe7",dotS:"#fff"},TH_D={mute:"#9aa6ad",grid:"rgba(255,255,255,.08)",gridZ:"rgba(255,255,255,.28)",acc:"#7fd6e8",dotIn:"#0b0e11",lbl:"#e8fbff",bar:"#3a8fa3",dotS:"#0b0e11"};
 let TC=TH_L,DK=false;
 const IC_MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',IC_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
@@ -205,6 +235,12 @@ let S={salary:0,pct:{...CATS},items:[],cx:[],ci:[],csh:false};
 try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);S={...S,...p,pct:{...CATS,...(p.pct||{})}};delete S.name}}catch(e){}
 function regCat(x){CATS[x.n]=0;COL_L[x.n]=x.c;COL_D[x.n]=x.c;COL[x.n]=x.c;CEMO[x.n]=x.e;if(S.pct)S.pct[x.n]=0;if(S.lim&&!S.lim[x.n])S.lim[x.n]={t:"eur",v:0}}
 if(!Array.isArray(S.cx))S.cx=[];if(!Array.isArray(S.ci))S.ci=[];
+if(!Array.isArray(S.cdel))S.cdel=[];
+if(!Array.isArray(S.cx))S.cx=[];
+if(!S.catV3){const rm={Spesa:"Cibo",Trasporti:"Macchina"},cs=c=>rm[c]||c,used=new Set([...(S.items||[]).map(i=>cs(i.c)),...(S.rec||[]).filter(r=>r.t!=="in").map(r=>r.c),...(S.sch||[]).filter(r=>r.t!=="in").map(r=>r.c)]);
+  BUILTIN.forEach(n=>{if(!used.has(n)&&!S.cdel.includes(n))S.cdel.push(n)});S.cx=S.cx.filter(z=>!(BUILTIN.includes(z.n)&&!used.has(z.n)));S.catV3=true}
+function catDrop(n){delete CATS[n];delete COL_L[n];delete COL_D[n];delete COL[n];delete CEMO[n];if(S.pct)delete S.pct[n];if(S.lim)delete S.lim[n]}
+S.cdel.forEach(catDrop);
 S.cx.forEach(regCat);
 S.items.forEach(i=>{i.c={Spesa:"Cibo",Trasporti:"Macchina"}[i.c]||i.c});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -386,10 +422,10 @@ function cleanImport(d){
   const rec=(Array.isArray(d.rec)?d.rec:[]).filter(r=>r&&typeof r.id==="string"&&typeof r.d==="string"&&typeof r.c==="string"&&typeof r.a==="number"&&typeof r.from==="string"&&ok.test(r.from)&&(!r.to||ok.test(r.to))).map(r=>({...r,id:cl(r.id),d:cl(r.d),c:cl(r.c)}));
   const sals={};if(d.sals&&typeof d.sals==="object")Object.keys(d.sals).forEach(k=>{if(ok.test(k)&&typeof d.sals[k]==="number")sals[k]=d.sals[k]});
   const lim={};if(d.lim&&typeof d.lim==="object")Object.keys(d.lim).forEach(k=>{const L=d.lim[k];if(L&&["eur","pct","rest"].includes(L.t)&&typeof L.v==="number")lim[cl(k)]=L});
-  return {salary:typeof d.salary==="number"?d.salary:0,pct:{...CATS},items,rec,sals,lim,hide:d.hide===true,order:(Array.isArray(d.order)?d.order.map(cl):[]),col:{rec:!!(d.col&&d.col.rec),exp:!!(d.col&&d.col.exp)},recSeeded:true,recSeeded2:true,limV2:d.limV2===true,cx:cleanCats(d.cx,true),ci:cleanCats(d.ci,false),csh:d.csh===true}}
+  return {salary:typeof d.salary==="number"?d.salary:0,pct:{...CATS},items,rec,sals,lim,hide:d.hide===true,order:(Array.isArray(d.order)?d.order.map(cl):[]),col:{rec:!!(d.col&&d.col.rec),exp:!!(d.col&&d.col.exp)},recSeeded:true,recSeeded2:true,limV2:d.limV2===true,catV3:d.catV3===true,cdel:(Array.isArray(d.cdel)?d.cdel.map(cl).filter(n=>BUILTIN.includes(n)):[]),cx:cleanCats(d.cx,true),ci:cleanCats(d.ci,false),csh:d.csh===true}}
 function cleanCats(a,x){if(!Array.isArray(a))return[];const seen=new Set(),out=[];
   a.forEach(c=>{if(!c||typeof c.n!=="string"||typeof c.c!=="string"||!/^#[0-9a-f]{6}$/i.test(c.c))return;const n=catName(c.n),e=typeof c.e==="string"?c.e.replace(/[<>&"]/g,"").slice(0,12):"";
-    if(!n||seen.has(n.toLowerCase())||(x&&CATS[n]!==undefined&&!(S.cx||[]).some(z=>z.n===n)))return;seen.add(n.toLowerCase());out.push({n,e:e||"\u{1F3F7}\uFE0F",c:c.c})});return out}
+    if(!n||seen.has(n.toLowerCase())||(x&&CATS[n]!==undefined&&!(S.cx||[]).some(z=>z.n===n)))return;seen.add(n.toLowerCase());const q={n,e:e||"\u{1F3F7}\uFE0F",c:c.c},sr=typeof c.s==="string"?catName(c.s):"";if(sr)q.s=sr;out.push(q)});return out}
 function doImport(){if(!impData)return;S=impData;save();location.reload()}
 function openFail(){
   if(modal&&modal.kind==="fail")return;
@@ -460,18 +496,19 @@ function neUpdate(){
     $("ncw").hidden=false;$("nqn").textContent=FQN[ne.f];$("nal").textContent=ne.t==="in"?"Importo per accredito":"Importo per addebito";
     const cl=document.querySelector("[data-nfclear]");if(cl)cl.hidden=!$("nfd").value}
   if(ne.sch){document.querySelectorAll("[data-nt]").forEach(b=>b.classList.toggle("on",b.dataset.nt===ne.t));$("ncw").hidden=ne.t==="in";$("nal").textContent=ne.t==="in"?"Importo previsto in entrata":"Importo previsto in uscita"}
+  if(ne.t!=="in"&&!ne.cat)ok=false;
   $("nsave").disabled=!ok;
   const inc=!!(ne.rec&&ne.t==="in"),nc=$("nchips"),want=inc?"i":"x";
   if(nc&&nc.dataset.k!==want){nc.dataset.k=want;nc.innerHTML=ncHtml(want)}
   document.querySelectorAll("[data-nc]").forEach(b=>b.classList.toggle("on",b.dataset.nc===(inc?ne.ic:ne.cat)));
   ndSum();
   const ic=inc?S.ci.find(c=>c.n===ne.ic):null;
-  $("nci").innerHTML=inc?'<span class="cem" aria-hidden="true">'+esc(ic?ic.e:"\u{1F3F7}\uFE0F")+'</span>':catIcon(ne.cat);$("ncn").textContent=inc?(ne.ic||"Nessuna"):ne.cat;$("ncl").textContent=!inc&&ne.sug?"Categoria suggerita:":"Categoria:"}
-function ncHtml(k){if(k==="x")return ord().map(c=>`<button type="button" role="option" data-nc="${c}">${catIcon(c)}${c}</button>`).join("");
+  $("nci").innerHTML=inc?'<span class="cem" aria-hidden="true">'+esc(ic?ic.e:"\u{1F3F7}\uFE0F")+'</span>':catIcon(ne.cat);$("ncn").textContent=inc?(ne.ic||"Nessuna"):(ne.cat||"Nessuna");$("ncl").textContent=!inc&&ne.sug?"Categoria suggerita:":"Categoria:"}
+function ncHtml(k){if(k==="x")return ord().length?ord().map(c=>`<button type="button" role="option" data-nc="${c}">${catIcon(c)}${c}</button>`).join(""):'<p class="nchint">Nessuna categoria di spesa: creane una in Impostazioni \u2192 Categorie.</p>';
   return S.ci.length?S.ci.map(c=>`<button type="button" role="option" data-nc="${esc(c.n)}"><span class="cem" aria-hidden="true">${esc(c.e)}</span>${esc(c.n)}</button>`).join(""):'<p class="nchint">Nessuna categoria di entrata: creane una in Impostazioni \u2192 Categorie.</p>'}
 function neDesc(){
   if(!ne.manual){const g=suggestCat($("nd").value);
-    if(g){ne.cat=g;ne.sug=true}else{ne.cat=(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0];ne.sug=false}}
+    if(g){ne.cat=g;ne.sug=true}else{ne.cat=(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:(ord()[0]||"");ne.sug=false}}
   neUpdate()}
 function nePress(k){ne.amt=amtNext(ne.amt,k);neUpdate()}
 function neSave(){
@@ -494,7 +531,7 @@ function dcard(p,lab,extra){return `<div class="ncat ndate"><span class="nci">${
 function openNewExp(rec,editId,opt){
   const sch=!!(opt&&opt.sch);
   const cur=mk(new Date()),vm=$("month").value;
-  ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:ord()[0],sug:false,manual:false,st:"paid",dm:"pick",rec:!!rec,sch,edit:null,t:"out",f:"m",ic:S.ci.some(c=>c.n===S.lastIc)?S.lastIc:(S.ci[0]?S.ci[0].n:"")};
+  ne={amt:"",cat:(S.lastCat&&CATS[S.lastCat]!==undefined)?S.lastCat:(ord()[0]||""),sug:false,manual:false,st:"paid",dm:"pick",rec:!!rec,sch,edit:null,t:"out",f:"m",ic:S.ci.some(c=>c.n===S.lastIc)?S.lastIc:(S.ci[0]?S.ci[0].n:"")};
   const has=editId!==undefined&&editId!==null,eIt=!rec&&!sch&&has?S.items.find(i=>i.id==editId):null,eRc=rec&&has?S.rec.find(r=>r.id===editId):null,eSc=sch&&has?S.sch.find(x=>x.id===editId):null,E=eIt||eRc||eSc;
   if(eIt){ne.edit=eIt.id;ne.oa=eIt.a;ne.amt=String(cvd(eIt.a)).replace(".",",");ne.cat=CATS[eIt.c]!==undefined?eIt.c:ne.cat;ne.manual=true;ne.st=eIt.s||"paid"}
   if(eRc){ne.edit=eRc.id;ne.oa=eRc.a;ne.amt=String(cvd(eRc.a)).replace(".",",");ne.t=eRc.t==="in"?"in":"out";ne.f=eRc.f||"m";if(CATS[eRc.c]!==undefined){ne.cat=eRc.c}if(eRc.t==="in"&&S.ci.some(c=>c.n===eRc.c))ne.ic=eRc.c;ne.manual=true}
@@ -539,7 +576,7 @@ function openAmount(title,label,val,max,cb){
   $("mt").textContent=title;
   $("mbody").innerHTML=`<div class="ns"><div class="namt"><span>${label}</span><div class="nvv"><i>${SYM}</i><b id="amval"></b></div></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",NEM==="1"?"":",","0","bk"].map(k=>k===""?"<span></span>":`<button type="button" data-ak="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" data-amok="1"><span>Conferma</span>${IC_OK}</button></div>`;
   $("mod").hidden=false;amUpdate()}
-function amDone(){const am0=am,v=am.amt?Math.min(parseFloat(am.amt.replace(",",".")),am.max):null,cb=am.cb;closeModal();cb(isNaN(v)?null:inv(v,am0.o))}
+function amDone(){const am0=am,v=am.amt?Math.min(parseFloat(am.amt.replace(",",".")),am.max):null,cb=am.cb;closeModal();cb(v===null||isNaN(v)?null:inv(v,am0.o))}
 function mLong(k){const n=new Intl.DateTimeFormat("it-IT",{month:"long",year:"numeric"}).format(new Date(+k.slice(0,4),+k.slice(5,7)-1,1));return n[0].toUpperCase()+n.slice(1)}
 function openSalAmt(k){openAmount("Stipendio di "+mLong(k).toLowerCase(),"Stipendio netto",S.sals[k],1e6,v=>{if(v===null)delete S.sals[k];else S.sals[k]=v;save();render();renderSalEd()})}
 function openBudAmt(c){const cur=Math.round(limOf(c,salOf($("month").value))*100)/100;openAmount("Budget "+c,"Budget mensile",cur||undefined,1e6,v=>{S.lim[c]={t:"eur",v:v===null?0:v};save();render()})}
@@ -769,7 +806,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.k&&ne)nePress(t.dataset.k);
   if(t.dataset.cd){CAL.sel=t.dataset.cd;renderCal()}
   if(t.dataset.cadd)openNewExp(false,null,{sch:true,date:CAL.sel});
-  if(t.dataset.cpay){const x=S.sch.find(z=>z.id===t.dataset.cpay);if(x){S.items.push({id:Date.now(),m:x.dt.slice(0,7),dt:x.dt,d:x.d,a:x.a,c:CATS[x.c]!==undefined?x.c:ord()[0],s:"paid"});S.sch=S.sch.filter(z=>z.id!==x.id);save();render()}}
+  if(t.dataset.cpay){const x=S.sch.find(z=>z.id===t.dataset.cpay);if(x){S.items.push({id:Date.now(),m:x.dt.slice(0,7),dt:x.dt,d:x.d,a:x.a,c:CATS[x.c]!==undefined?x.c:(ord()[0]||x.c),s:"paid"});S.sch=S.sch.filter(z=>z.id!==x.id);save();render()}}
   if(t.dataset.nt&&ne){ne.t=t.dataset.nt;neUpdate()}
   if(t.dataset.nq&&ne){ne.f=t.dataset.nq;ncClose();neUpdate()}
   if(t.dataset.nfclear&&ne){$("nfd").value="";const w=$("nfw");if(w){delete w.dataset.val;wClose("nf")}neUpdate()}
@@ -790,8 +827,14 @@ document.addEventListener("click",e=>{
   if(t.dataset.catTab){CT=t.dataset.catTab;catRender();return}
   if(t.dataset.catEye){S.csh=!S.csh;save();catRender();toast(S.csh?"Suggerimenti nascosti":"Suggerimenti visibili",true);return}
   if(t.dataset.catEdit){CEDIT=!CEDIT;catRender();return}
+  {const cr=e.target.closest&&e.target.closest("#catul .cr");if(cr&&!CEDIT&&!DR&&cr.dataset.cn){openCatNew(cr.dataset.cn);return}}
+  if(t.dataset.cesave){catSave();return}
+  if(t.dataset.cecancel){closeModal();return}
+  if(t.dataset.cedel){catDelAsk();return}
+  if(t.dataset.cedback){openCatNew(NCAT.edit);return}
+  if(t.dataset.cedelok){catDel();return}
   if(t.dataset.catNew){openCatNew();return}
-  if(t.dataset.catSug){const z=catSugList().find(q=>q[0]===t.dataset.catSug);if(z)catAdd(CT,z[0],z[1],z[2]);return}
+  if(t.dataset.catSug){const z=catSugList().find(q=>q[0]===t.dataset.catSug);if(z)catAdd(CT,z[0],z[1],z[2],z[0]);return}
   if(t.dataset.nck&&NCAT){NCAT.k=t.dataset.nck;ncSync();return}
   if(t.dataset.nct&&NCAT){NCAT.tab=+t.dataset.nct;$("nce").value="";ncEmoji("");return}
   if(t.dataset.nce&&NCAT){NCAT.e=t.dataset.nce;ncSync();const sc=$("emg").scrollTop;ncEmoji($("nce").value);$("emg").scrollTop=sc;return}
