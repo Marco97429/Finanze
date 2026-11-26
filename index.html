@@ -62,6 +62,7 @@ input,select,button{background:#f4f7fc}
 #sb{background:rgba(40,60,110,.06)}#sbt{background:#fff;border:1px solid #b9c4da}#sbt::after{background:#9fb0cc}#sbt{border-color:#b9c4da}
 .stbk .alt{color:#1b2333}
 .rtg{background:rgba(14,157,182,.1);border-color:rgba(14,157,182,.35);color:#0e9db6}
+.spc,.spsr input,.spmenu{background:#fff;border-color:#d9e1ef;box-shadow:0 2px 8px rgba(40,60,110,.08)}.spmenu{box-shadow:0 10px 30px rgba(40,60,110,.18)}.spmenu button.on{color:#0e9db6}.spc.on{background:var(--g);border-color:var(--g)}#v-spese .sprow .eyebrow.t2{background:var(--g);border-color:var(--g);color:#fff;box-shadow:0 6px 14px rgba(14,157,182,.3)}
 </style>
 </head>
 <body>
@@ -194,10 +195,10 @@ input,select,button{background:#f4f7fc}
   </section>
 
   <section id="v-spese" hidden>
-    <h1 class="gh sth1">Spese Mensili</h1>
     <div class="card">
-      <div class="spslot" id="spslot"></div>
-      <div class="dh" style="align-items:center;margin-bottom:8px"><button type="button" class="eyebrow t2 nbox" data-new="exp">Aggiungi una nuova spesa</button><div class="hbtns"><button class="new" data-new="exp" type="button">NUOVA SPESA</button></div></div>
+      <div class="sph"><h1 class="gh sph1">Spese Mensili</h1><div class="spslot" id="spslot"></div></div>
+      <div class="sprow"><div class="spb"><button type="button" class="spc" id="spsb" data-spsearch="1" aria-label="Cerca una spesa" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button><button type="button" class="spc" id="spfb" data-spfilter="1" aria-label="Filtra le spese per" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button><div class="spmenu" id="spmenu" role="menu" hidden></div></div><button type="button" class="eyebrow t2 nbox" data-new="exp">Aggiungi una nuova spesa</button></div>
+      <div class="spsr" id="spsr" hidden><input type="search" id="spq" placeholder="Cerca una spesa" aria-label="Cerca una spesa" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
       <form id="f" hidden>
         <input id="d" placeholder="Descrizione (es. Affitto)" required class="full" aria-label="Descrizione">
         <input id="a" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importo" required aria-label="Importo">

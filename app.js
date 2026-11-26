@@ -687,14 +687,37 @@ function expRow(i){const c=i.c;return `<li class="row xr" data-rowedit="${i.id}"
 const DGM=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"],DGW=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
 function dgKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function dgLabel(k){const n=new Date(),t=dgKey(n);n.setDate(n.getDate()-1);if(k===t)return"Oggi";if(k===dgKey(n))return"Ieri";const d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10));return DGW[d.getDay()]+", "+d.getDate()+" "+DGM[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():"")}
-function renderGroups(its){
-  if(!its.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con NUOVA SPESA.</li>';
-  const key=i=>i.dt||(i.m+"-01"),days={};
-  its.forEach(i=>{(days[key(i)]=days[key(i)]||[]).push(i)});
-  return Object.keys(days).sort().reverse().map(k=>{
-    const g=days[k].sort((a,b)=>a.id>b.id?-1:a.id<b.id?1:0);
-    const open=dgOpen[k]!==false||g.some(i=>i.id==editId),t=g.reduce((x,i)=>x+i.a,0),lb=dgLabel(k);
-    return `<li class="dg"><button type="button" class="dgh" data-dg="${k}" aria-expanded="${open}" aria-label="${lb}: ${g.length} spese, totale ${eur2(t)}"><span class="dgd">${lb}</span><span class="amt">-${eur2(t)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="dgl"${open?"":" hidden"}>${g.map(i=>i.id==editId?editRow(i):expRow(i)).join("")}</ul></li>`}).join("")}
+let spf={q:"",mode:"day"};
+const SPM={all:"Tutte le voci",day:"Per giorno",week:"Per settimana",cat:"Per categoria",state:"Per stato"};
+function spWeek(k){const d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10));d.setDate(d.getDate()-((d.getDay()+6)%7));return dgKey(d)}
+function spWLabel(k){const d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)),e=new Date(d);e.setDate(e.getDate()+6);return "Sett. "+d.getDate()+" "+DGM[d.getMonth()]+" – "+e.getDate()+" "+DGM[e.getMonth()]}
+function renderGroups(all){
+  if(!all.length)return '<li class="empty">Nessuna spesa in questo mese. Aggiungi la prima con “Aggiungi una nuova spesa”.</li>';
+  const q=(spf.q||"").trim().toLowerCase(),its=q?all.filter(i=>(i.d+" "+i.c+" "+eur2(i.a)+" "+String(cvd(i.a)).replace(".",",")).toLowerCase().includes(q)):all;
+  if(!its.length)return '<li class="empty">Nessuna spesa trovata.</li>';
+  const key=i=>i.dt||(i.m+"-01"),srt=(a,b)=>key(a)<key(b)?1:key(a)>key(b)?-1:a.id>b.id?-1:a.id<b.id?1:0,mode=spf.mode;
+  const rows=g=>g.map(i=>i.id==editId?editRow(i):expRow(i)).join("");
+  if(mode==="all")return `<li class="dg"><ul class="dgl">${rows(its.slice().sort(srt))}</ul></li>`;
+  const by={},meta={};
+  its.forEach(i=>{let k,lb;if(mode==="week"){const w=spWeek(key(i));k="w"+w;lb=spWLabel(w)}else if(mode==="cat"){k="c:"+i.c;lb=i.c}else if(mode==="state"){k="s:"+i.s;lb=i.s==="paid"?"Pagate":"Preventivate"}else{k=key(i);lb=dgLabel(k)}
+    (by[k]=by[k]||[]).push(i);meta[k]=lb});
+  let ks=Object.keys(by);
+  if(mode==="cat"||mode==="state")ks.sort((a,b)=>by[b].reduce((x,i)=>x+i.a,0)-by[a].reduce((x,i)=>x+i.a,0));else ks.sort().reverse();
+  return ks.map(k=>{
+    const g=by[k].sort(srt),lb=meta[k];
+    const open=dgOpen[k]!==false||g.some(i=>i.id==editId),t=g.reduce((x,i)=>x+i.a,0);
+    return `<li class="dg"><button type="button" class="dgh" data-dg="${k}" aria-expanded="${open}" aria-label="${esc(lb)}: ${g.length} spese, totale ${eur2(t)}"><span class="dgd">${esc(lb)}</span><span class="amt">-${eur2(t)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="dgl"${open?"":" hidden"}>${rows(g)}</ul></li>`}).join("")}
+function spUi(){const m=$("spmenu");if(!m)return;
+  $("spfb").classList.toggle("on",spf.mode!=="day");$("spsb").classList.toggle("on",!!(spf.q||"").trim());
+  m.innerHTML=Object.keys(SPM).map(k=>`<button type="button" role="menuitemradio" aria-checked="${spf.mode===k}" class="${spf.mode===k?"on":""}" data-spmode="${k}"><span>${SPM[k]}</span>${spf.mode===k?IC_OK:""}</button>`).join("")}
+function spMenu(open){const m=$("spmenu");if(!m)return;if(open)spUi();m.hidden=!open;$("spfb").setAttribute("aria-expanded",String(!!open))}
+document.addEventListener("click",e=>{const T=e.target;if(!T.closest||$("v-spese").hidden)return;
+  const mb=T.closest("[data-spmode]");
+  if(mb){spf.mode=mb.dataset.spmode;spMenu(false);spUi();render();return}
+  if(T.closest("[data-spfilter]")){spMenu($("spmenu").hidden);return}
+  if(T.closest("[data-spsearch]")){const r=$("spsr"),op=r.hidden;r.hidden=!op;$("spsb").setAttribute("aria-expanded",String(op));spMenu(false);if(op)$("spq").focus();else{spf.q="";$("spq").value="";spUi();render()}return}
+  if(!T.closest("#spmenu"))spMenu(false)});
+document.addEventListener("input",e=>{if(e.target.id==="spq"){spf.q=e.target.value;spUi();render()}});
 function render(){
   const m=$("month").value, sal=salOf(m);
   const its=S.items.filter(i=>i.m===m);
