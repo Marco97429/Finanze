@@ -71,7 +71,7 @@ input,select,button{background:#f4f7fc}
     <button type="button" class="on" data-view="home" aria-label="Home" aria-current="page"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 3 10.6c-.4.3-.1 1 .4 1H5v7.4c0 .6.4 1 1 1h3.5v-5.5h5V20H18c.6 0 1-.4 1-1v-7.4h1.6c.5 0 .8-.7.4-1z"/></svg><span>Home</span></button>
     <button type="button" data-view="statistiche" aria-label="Statistiche"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10H12z"/><path d="M14 2.2V10h7.8A10 10 0 0 0 14 2.2z"/></svg><span>Statistiche</span></button>
     <button type="button" data-view="calendario" aria-label="Calendario"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2zM5 9v10h14V9zm2 2h3v3H7z"/></svg><span>Calendario</span></button>
-    <button type="button" data-view="x-budget" aria-label="Budget"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm3 4v2h10V8zm0 4v2h10v-2zm0 4v1.5h6V16z"/></svg><span>Budget</span></button>
+    <button type="button" data-view="budget" aria-label="Budget"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm3 4v2h10V8zm0 4v2h10v-2zm0 4v1.5h6V16z"/></svg><span>Budget</span></button>
     <button type="button" data-view="impostazioni" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.4h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>Impostazioni</span></button>
   </nav>
 </header>
@@ -210,16 +210,15 @@ input,select,button{background:#f4f7fc}
   </section>
 
   <section id="v-budget" hidden>
-    <div class="card">
-      <h2>Budget per categoria</h2>
-      <p class="sub" style="margin:0 0 6px">Imposta il budget in euro di ogni categoria: la percentuale si calcola da sola come budget ÷ stipendio netto × 100.</p>
-      <div id="cats"></div>
-    </div>
+    <div class="bhd"><h1 class="gh sth1">Budget</h1><button type="button" class="bplus" data-bnew="1" aria-label="Nuovo budget">+</button></div>
+    <div id="blist"></div>
+    <div id="cats" hidden></div>
   </section>
 </main>
 </div>
 <div id="lock"><div class="lkc"><img class="lki" src="icons/apple-touch-icon.png" alt="" width="84" height="84"><h2>Le mie spese</h2><p>App bloccata</p><button type="button" class="main lkb" id="lkb">Sblocca con Face ID</button></div></div>
 <div class="mod" id="mod" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="dh" style="align-items:center;margin-bottom:6px"><h3 id="mt"></h3><button class="mini ic" type="button" data-mclose aria-label="Chiudi">✕</button></div><div id="mbody"></div></div></div>
+<div id="bd" hidden></div>
 <div id="sb" hidden aria-hidden="true"><div id="sbt"></div></div>
 <script src="app.js"></script>
 </body>

@@ -193,7 +193,7 @@ function catSave(){if(!NCAT||!NCAT.edit)return;const k=NCAT.k,old=NCAT.edit,n=ca
   const o0=(k==="x"?S.cx:S.ci).find(z=>z.n===old),sr=(o0&&o0.s)||(k==="x"&&BUILTIN.includes(old)?old:"");
   const o={n,e:NCAT.e||"\u{1F3F7}️",c:NCAT.c};if(sr)o.s=sr;
   if(k==="x"){
-    if(n!==old){const L=S.lim[old];catRef("x",old,n);S.order=ord().map(z=>z===old?n:z);if(S.lastCat===old)S.lastCat=n;if(KW[old]){KW[n]=KW[old];delete KW[old]}
+    if(n!==old){const L=S.lim[old];catRef("x",old,n);S.bud.forEach(b=>{if(b.c===old)b.c=n});S.order=ord().map(z=>z===old?n:z);if(S.lastCat===old)S.lastCat=n;if(KW[old]){KW[n]=KW[old];delete KW[old]}
       catDrop(old);if(BUILTIN.includes(old)&&!S.cdel.includes(old))S.cdel.push(old);S.cx=S.cx.filter(z=>z.n!==old);if(L)S.lim[n]=L}
     S.cx=S.cx.filter(z=>z.n!==n);S.cx.push(o);regCat(o);S.order=ord()}
   else{const ix=S.ci.findIndex(z=>z.n===old);if(ix<0)return;S.ci[ix]=o;if(n!==old){catRef("i",old,n);if(S.lastIc===old)S.lastIc=n}}
@@ -205,7 +205,7 @@ function catDelAsk(){if(!NCAT||!NCAT.edit)return;const k=NCAT.k,old=NCAT.edit,u=
   $("mbody").innerHTML=`<div class="ns"><p class="cedp">Vuoi eliminare la categoria “${esc(old)}”?${u?` Viene usata da ${u} ${u===1?"movimento":"movimenti"}: scegli dove spostarli.`:""}</p>${u?`<select id="cemv" class="ninp" aria-label="Sposta i movimenti in">${opts}</select>`:""}<div class="ceacts two"><button type="button" class="nbt" data-cedback="1">Annulla</button><button type="button" class="nbt danger" data-cedelok="1">Elimina</button></div></div>`}
 function catDel(){if(!NCAT||!NCAT.edit)return;const k=NCAT.k,old=NCAT.edit,mv=$("cemv");
   if(mv)catRef(k,old,mv.value);
-  if(k==="x"){catDrop(old);if(BUILTIN.includes(old)&&!S.cdel.includes(old))S.cdel.push(old);S.cx=S.cx.filter(z=>z.n!==old);S.order=(S.order||[]).filter(z=>z!==old);if(S.lastCat===old)delete S.lastCat}
+  if(k==="x"){S.bud=S.bud.filter(b=>b.c!==old);catDrop(old);if(BUILTIN.includes(old)&&!S.cdel.includes(old))S.cdel.push(old);S.cx=S.cx.filter(z=>z.n!==old);S.order=(S.order||[]).filter(z=>z!==old);if(S.lastCat===old)delete S.lastCat}
   else{S.ci=S.ci.filter(z=>z.n!==old);if(S.lastIc===old)delete S.lastIc}
   catFin(k)}
 function ncAdd(){if(!NCAT)return;const err=catAdd(NCAT.k,$("ncn").value,NCAT.e,NCAT.c);$("ncerr").textContent=err;if(err)return;
@@ -262,7 +262,7 @@ const fE2=n=>symP()+(DEC?NFN2:NFN0).format(n*R);
 const fN0=n=>NFN0.format(n*R);
 const cvd=n=>Math.round(n*R*100)/100;
 const inv=(x,o)=>{if(!(x>=0))return x;if(o!==undefined&&o!==null&&cvd(o)===x)return o;return Math.round(x/R*10000)/10000};
-function reAll(){["render","renderRec","renderInc","renderCal","renderSal","renderSalEd","renderStats"].forEach(f=>{try{if(typeof window[f]==="function")window[f]()}catch(e){}})}
+function reAll(){["render","renderRec","renderInc","renderCal","renderSal","renderSalEd","renderStats","renderBud"].forEach(f=>{try{if(typeof window[f]==="function")window[f]()}catch(e){}})}
 function setDec(v){DEC=!!v;try{localStorage.setItem("spese-dec-v1",DEC?"1":"0")}catch(e){}reAll()}
 const cap=t=>t?t.charAt(0).toLocaleUpperCase("it-IT")+t.slice(1):t;
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -287,6 +287,7 @@ const addM=(m,n)=>{const [y,o]=m.split("-").map(Number);return mk(new Date(y,o-1
 const ml=m=>{const [y,o]=m.split("-").map(Number);return new Intl.DateTimeFormat("it-IT",{month:"short",year:"numeric"}).format(new Date(y,o-1,1))};
 if(!Array.isArray(S.rec))S.rec=[];
 if(!Array.isArray(S.sch))S.sch=[];
+if(!Array.isArray(S.bud))S.bud=[];
 S.items.forEach(i=>{if(typeof i.d==="string")i.d=cap(i.d)});S.rec.forEach(r=>{if(typeof r.d==="string")r.d=cap(r.d)});
 const FQ={m:1,q:3,s:6,y:12},FQN={m:"Mensile",q:"Trimestrale",s:"Semestrale",y:"Annuale"},FQL={m:"mese",q:"trimestre",s:"semestre",y:"anno"};
 function recStart(r){return r.start||(r.from+"-01")}
@@ -352,7 +353,7 @@ const IC_DN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 function renderCnt(){const m=$("month").value;$("rcnt2").textContent=S.rec.filter(r=>r.t!=="in").length;}
 function setExpOpen(o){$("f").hidden=!o;if(o){$("d").focus()}else{$("f").reset()}}
 let modal=null;
-function closeModal(){$("mod").hidden=true;modal=null;ne=null;am=null;$("mbody").innerHTML="";document.querySelector(".mbox").classList.remove("sheet")}
+function closeModal(){$("mod").hidden=true;if(modal&&modal.kind==="budget-sheet"&&!bsRet)bs=null;modal=null;ne=null;am=null;$("mbody").innerHTML="";document.querySelector(".mbox").classList.remove("sheet")}
 function openModal(kind,id){
   const r=kind==="edit-rec"?S.rec.find(x=>x.id===id):kind==="edit-exp"?S.items.find(i=>i.id==id):null,isRec=kind==="new-rec"||kind==="edit-rec";
   if(kind.startsWith("edit")&&!r)return;
@@ -422,7 +423,8 @@ function cleanImport(d){
   const rec=(Array.isArray(d.rec)?d.rec:[]).filter(r=>r&&typeof r.id==="string"&&typeof r.d==="string"&&typeof r.c==="string"&&typeof r.a==="number"&&typeof r.from==="string"&&ok.test(r.from)&&(!r.to||ok.test(r.to))).map(r=>({...r,id:cl(r.id),d:cl(r.d),c:cl(r.c)}));
   const sals={};if(d.sals&&typeof d.sals==="object")Object.keys(d.sals).forEach(k=>{if(ok.test(k)&&typeof d.sals[k]==="number")sals[k]=d.sals[k]});
   const lim={};if(d.lim&&typeof d.lim==="object")Object.keys(d.lim).forEach(k=>{const L=d.lim[k];if(L&&["eur","pct","rest"].includes(L.t)&&typeof L.v==="number")lim[cl(k)]=L});
-  return {salary:typeof d.salary==="number"?d.salary:0,pct:{...CATS},items,rec,sals,lim,hide:d.hide===true,order:(Array.isArray(d.order)?d.order.map(cl):[]),col:{rec:!!(d.col&&d.col.rec),exp:!!(d.col&&d.col.exp)},recSeeded:true,recSeeded2:true,limV2:d.limV2===true,catV3:d.catV3===true,cdel:(Array.isArray(d.cdel)?d.cdel.map(cl).filter(n=>BUILTIN.includes(n)):[]),cx:cleanCats(d.cx,true),ci:cleanCats(d.ci,false),csh:d.csh===true}}
+  return {salary:typeof d.salary==="number"?d.salary:0,pct:{...CATS},items,rec,sals,lim,hide:d.hide===true,order:(Array.isArray(d.order)?d.order.map(cl):[]),col:{rec:!!(d.col&&d.col.rec),exp:!!(d.col&&d.col.exp)},recSeeded:true,recSeeded2:true,limV2:d.limV2===true,bud:cleanBud(d.bud),catV3:d.catV3===true,cdel:(Array.isArray(d.cdel)?d.cdel.map(cl).filter(n=>BUILTIN.includes(n)):[]),cx:cleanCats(d.cx,true),ci:cleanCats(d.ci,false),csh:d.csh===true}}
+function cleanBud(a){const out=[],seen=new Set();if(!Array.isArray(a))return out;a.forEach(b=>{if(!b||typeof b.a!=="number"||!(b.a>0)||!["d","w","m","y"].includes(b.f)||typeof b.c!=="string")return;const c=catName(b.c);if(seen.has(c))return;seen.add(c);const d=Math.floor(+b.d)||0,mo=Math.floor(+b.mo)||0;out.push({id:"b"+out.length+Date.now(),a:Math.min(b.a,1e9),c,f:b.f,d:b.f==="w"?Math.min(6,Math.max(0,d)):Math.min(28,Math.max(1,d||1)),mo:Math.min(11,Math.max(0,mo))})});return out}
 function cleanCats(a,x){if(!Array.isArray(a))return[];const seen=new Set(),out=[];
   a.forEach(c=>{if(!c||typeof c.n!=="string"||typeof c.c!=="string"||!/^#[0-9a-f]{6}$/i.test(c.c))return;const n=catName(c.n),e=typeof c.e==="string"?c.e.replace(/[<>&"]/g,"").slice(0,12):"";
     if(!n||seen.has(n.toLowerCase())||(x&&CATS[n]!==undefined&&!(S.cx||[]).some(z=>z.n===n)))return;seen.add(n.toLowerCase());const q={n,e:e||"\u{1F3F7}\uFE0F",c:c.c},sr=typeof c.s==="string"?catName(c.s):"";if(sr)q.s=sr;out.push(q)});return out}
@@ -719,7 +721,97 @@ function lockHome(){const r=document.documentElement;r.classList.remove("hl");if
 addEventListener("resize",()=>{lockHome();if(view==="statistiche")renderStats();if(view==="entrate")fitSal()});addEventListener("orientationchange",()=>setTimeout(lockHome,200));addEventListener("load",()=>setTimeout(()=>{lockHome();fitSal()},100));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>lockHome());
 
-function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","calendario","spese","budget","statistiche","impostazioni","appearance","appicon","notif","numentry","currency","categorie"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":SUBV.includes(v)?"impostazioni":v)));$("pill").hidden=v==="home"||v==="impostazioni"||SUBV.includes(v)||v==="entrate";$("mrow").style.display=v==="statistiche"||v==="impostazioni"||SUBV.includes(v)?"none":"";if(v==="statistiche")renderStats();if(v==="currency")curOpen();if(v==="categorie")catOpen();$("mrow").classList.toggle("sp",v==="spese"||v==="ricorrenti");(v==="ricorrenti"?$("rbar"):v==="calendario"?$("cbar"):$("mrow")).appendChild($("pill"));if(v==="entrate")renderSalEd();if(v==="ricorrenti"){const e=$("v-entrate");e.hidden=false;e.style.visibility="hidden";renderSalEd();e.hidden=true;e.style.visibility=""}if(v==="calendario")renderCal();scrollTo(0,0)}
+/* ===== Budget ===== */
+const BMO=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"],BWD=["lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"],BFN={d:"giorno",w:"settimana",m:"mese",y:"anno"},BFM={d:"Giornaliero",w:"Settimanale",m:"Mensile",y:"Annuale"};
+let bs=null,bdt=null,bsRet=false;
+const bEmo=c=>c===""?"":`<span class="cem" aria-hidden="true">${esc(CEMO[c]||"\u{1F3F7}️")}</span>`;
+const bName=c=>c===""?"Complessivo":c;
+function bPer(b,off){const t=new Date();t.setHours(0,0,0,0);let s,e;
+  if(b.f==="d"){s=new Date(t);s.setDate(s.getDate()+off);e=new Date(s)}
+  else if(b.f==="w"){const back=((t.getDay()+6)%7-b.d+7)%7;s=new Date(t);s.setDate(t.getDate()-back+off*7);e=new Date(s);e.setDate(s.getDate()+6)}
+  else if(b.f==="m"){let m=t.getMonth();if(t.getDate()<b.d)m--;m+=off;s=new Date(t.getFullYear(),m,b.d);e=new Date(t.getFullYear(),m+1,b.d-1)}
+  else{let y=t.getFullYear();if(t<new Date(y,b.mo,b.d))y--;y+=off;s=new Date(y,b.mo,b.d);e=new Date(y+1,b.mo,b.d-1)}
+  const n=Math.round((e-s)/864e5)+1,idx=Math.min(n-1,Math.max(0,Math.round((t-s)/864e5)));
+  return{s,e,k1:dgKey(s),k2:dgKey(e),n,idx,now:off===0}}
+function bLbl(p,f){const a=p.s,b=p.e,f1=d=>d.getDate()+" "+DGM[d.getMonth()];if(f==="d")return f1(a)+(a.getFullYear()!==new Date().getFullYear()?" "+a.getFullYear():"");return f1(a)+(f==="y"||a.getFullYear()!==b.getFullYear()?" "+a.getFullYear():"")+" – "+f1(b)+(f==="y"||a.getFullYear()!==b.getFullYear()?" "+b.getFullYear():"")}
+function bItems(b,p){return S.items.filter(i=>{if(i.s!=="paid")return false;if(b.c!==""&&i.c!==b.c)return false;const k=i.dt||(i.m+"-01");return k>=p.k1&&k<=p.k2}).sort((x,y)=>((y.dt||"")>(x.dt||"")?1:-1))}
+function bStat(b,off){const p=bPer(b,off||0),it=bItems(b,p),sp=it.reduce((t,i)=>t+i.a,0),left=b.a-sp,r=b.a>0?sp/b.a:0;return{p,it,sp,left,r,col:r>=1?"#e5675b":r>=.75?"#f0a03c":"var(--g)",el:p.n>0?(p.idx+.5)/p.n:0,dl:p.n-p.idx}}
+function bAmt(v){const a=Math.abs(v)*R;return ((!DEC||Math.abs(a-Math.round(a))<.005)?NFC0:NFC2).format(a)}
+function bBar(st){return `<div class="bbar"><i style="width:${Math.min(100,Math.round(st.r*100))}%;background:${st.col}"></i>${st.p.now&&st.p.n>1?`<b class="bmk" style="left:${(st.el*100).toFixed(1)}%"></b>`:""}</div>`}
+function renderBud(){const L=$("blist");if(!L)return;
+  const ov=S.bud.filter(b=>b.c===""),cs=S.bud.filter(b=>b.c!==""),cards=[];
+  if(!S.bud.length){L.innerHTML='<div class="bemp"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12" width="4.5" height="8" rx="1.2"/><rect x="9.8" y="8" width="4.5" height="12" rx="1.2"/><rect x="16.5" y="4" width="4.5" height="16" rx="1.2"/></svg><p>Nessun budget presente</p></div>';return}
+  let h="";
+  ov.forEach(b=>{const st=bStat(b);const perDay=st.dl>0?st.left/st.dl:0;
+    h+=`<button type="button" class="bcard bov" data-bcard="${b.id}"><div class="bch"><span>Complessivo</span><span>${b.f==="d"?"":st.dl+(st.dl===1?" giorno rimasto":" giorni rimasti")}</span></div><div class="bbig"><b${st.left<0?' class="neg"':""}>${st.left<0?"−":""}${bAmt(st.left)}</b><small>${st.left<0?"oltre il budget di "+bAmt(b.a):"rimasti su "+bAmt(b.a)}</small></div>${bBar(st)}<div class="bft">${st.left>0&&b.f!=="d"&&st.p.now?bAmt(perDay)+" al giorno per "+st.dl+(st.dl===1?" giorno":" giorni"):(st.sp?bAmt(st.sp)+" spesi":"Nessuna spesa")}</div></button>`});
+  if(cs.length){h+='<div class="bgrid">'+cs.map(b=>{const st=bStat(b);
+    return `<button type="button" class="bcard" data-bcard="${b.id}"><div class="bch"><span class="bcn">${bEmo(b.c)}${esc(b.c)}</span></div><div class="bbig"><b${st.left<0?' class="neg"':""}>${st.left<0?"−":""}${bAmt(st.left)}</b><small>${st.left<0?"oltre":"rimasti"}</small></div><div class="bft">${st.sp?bAmt(st.sp)+" spesi":"Nessuna spesa"}</div>${bBar(st)}</button>`}).join("")+"</div>"}
+  L.innerHTML=h}
+/* --- crea / modifica (finestra come "Nuova spesa") --- */
+function bsOpen(id){const b=id?S.bud.find(x=>x.id===id):null;bsRet=false;
+  bs=b?{id:b.id,a:(()=>{let s=cvd(b.a).toFixed(2).replace(".",",");if(NEM==="2"&&s.endsWith(",00"))s=s.slice(0,-3);return s})(),oa:b.a,c:b.c,f:b.f,d:b.d||1,mo:b.mo||0}:{id:"",a:"",oa:undefined,c:undefined,f:"m",d:1,mo:0};
+  if(!b){const av=bsAvail();bs.c=av.ov?"":(av.cats[0]);}
+  bsShow()}
+function bsVal(){return parseFloat((bs.a||"0").replace(",","."))||0}
+function bsAvail(){const used=new Set(S.bud.filter(b=>b.id!==bs.id).map(b=>b.c));return{ov:!used.has("")&&!(bs.id&&bs.c!==""),cats:ord().filter(c=>!used.has(c))}}
+function bsEst(){const v=bsVal();if(!(v>0)||bs.f==="d")return"";const e=inv(v,bs.oa),n=bs.f==="w"?7:bs.f==="y"?365:new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate(),x=e/n*R;return "≈ "+(x<10?NFC2:NFC0).format(x)+" al giorno"}
+const BGRID='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>';
+function bsShow(){const ed=!!bs.id,ttl=ed?"Modifica budget":"Nuovo budget";
+  modal={kind:"budget-sheet"};document.querySelector(".mbox").classList.add("sheet");$("mt").textContent=ttl;document.querySelector(".mbox").setAttribute("aria-label",ttl);
+  const card=(k,lab,ico)=>`<div class="ncwrap" id="bw_${k}"><div class="ncat" data-bdd="${k}" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false"><span class="nci" id="bi_${k}">${ico||""}</span><div class="nct"><small id="bl_${k}">${lab}</small><b id="bv_${k}"></b></div><span class="ncc">${IC_DN}</span></div><div class="nchips" id="bc_${k}" role="listbox" hidden></div></div>`;
+  $("mbody").innerHTML=`<div class="ns">${card("c","Categoria:")}${card("f","Frequenza:",IC_REP)}${card("mo","Mese di inizio:",IC_CLOCK)}${card("d","Data di inizio:",IC_CLOCK)}<div class="namt"><span>Importo</span><div class="nvv"><i>${SYM}</i><b id="bsval"></b></div><small class="bsest" id="bsest"></small></div><div class="kpad">${["1","2","3","4","5","6","7","8","9",NEM==="1"?"":",","0","bk"].map(k=>k===""?"<span></span>":`<button type="button" data-bk="${k}"${k==="bk"?' aria-label="Cancella"':""}>${k==="bk"?IC_BK:k}</button>`).join("")}</div><button type="button" class="nsave" id="bsave" data-bcreate="1" disabled><span>${ed?"Salva modifiche":"Salva budget"}</span>${IC_OK}</button></div>`;
+  $("mod").hidden=false;bsUpd()}
+function bsUpd(){if(!bs||!$("bsval"))return;const av=bsAvail(),ed=!!bs.id,y=bs.f==="y";
+  const it=(k,v,t,on)=>`<button type="button" role="option" data-bsel="${k}" data-v="${esc(String(v))}" class="${on?"on":""}">${t}</button>`;
+  $("bsval").textContent=bs.a||"0,00";$("bsval").classList.toggle("dim",!bs.a);
+  $("bsest").textContent=bsEst();
+  $("bi_c").innerHTML=bs.c===undefined?"":bs.c===""?BGRID:catIcon(bs.c);$("bv_c").textContent=bs.c===undefined?"Scegli categoria":bs.c===""?"Tutto (budget complessivo)":bs.c;
+  $("bc_c").innerHTML=(av.ov?it("c","",`${BGRID}Tutto (budget complessivo)`,bs.c===""):"")+av.cats.map(c=>it("c",c,catIcon(c)+esc(c),bs.c===c)).join("")+(ed?"":`<button type="button" role="option" data-bnewcat="1"><span class="bplus2">+</span>Nuova categoria</button>`);
+  $("bv_f").textContent=BFM[bs.f];$("bc_f").innerHTML=["d","w","m","y"].map(k=>it("f",k,BFM[k],bs.f===k)).join("");
+  $("bw_mo").hidden=!y;$("bw_d").hidden=bs.f==="d";
+  $("bv_mo").textContent=BMO[bs.mo].replace(/^./,x=>x.toUpperCase());$("bc_mo").innerHTML=BMO.map((n,i)=>it("mo",i,n.replace(/^./,x=>x.toUpperCase()),bs.mo===i)).join("");
+  $("bl_d").textContent=y?"Giorno di inizio:":"Data di inizio:";
+  if(bs.f==="w"){$("bv_d").textContent=BWD[bs.d].replace(/^./,x=>x.toUpperCase());$("bc_d").innerHTML=BWD.map((n,i)=>it("d",i,n.replace(/^./,x=>x.toUpperCase()),bs.d===i)).join("")}
+  else{$("bv_d").textContent=y?bs.d+"° del mese":"Il "+bs.d+"° di ogni mese";$("bc_d").innerHTML=Array.from({length:28},(_,i)=>i+1).map(n=>it("d",n,n+"°",bs.d===n)).join("")}
+  $("bsave").disabled=!(bsVal()>0&&bs.c!==undefined)}
+function bsCloseDD(except){document.querySelectorAll('#mbody [data-bdd]').forEach(c=>{if(c.dataset.bdd===except)return;const n=$("bc_"+c.dataset.bdd);if(n&&!n.hidden){n.hidden=true;c.setAttribute("aria-expanded","false")}})}
+function bsCreate(){if(!bs)return;const v=bsVal();if(!(v>0)||bs.c===undefined)return;
+  const o={a:inv(v,bs.oa),c:bs.c,f:bs.f,d:bs.f==="d"?1:bs.d,mo:bs.f==="y"?bs.mo:0};
+  if(bs.id){const b=S.bud.find(x=>x.id===bs.id);if(b)Object.assign(b,o)}else S.bud.push(Object.assign({id:"b"+Date.now()},o));
+  const id=bs.id;save();closeModal();renderBud();if(id&&bdt&&bdt.id===id)bdOpen(id,bdt.off)}
+/* --- dettaglio --- */
+function bdOpen(id,off){const b=S.bud.find(x=>x.id===id);if(!b)return;bdt={id,off:off||0,menu:false};bdRender();$("bd").hidden=false}
+function bdClose(){$("bd").hidden=true;bdt=null;$("bd").innerHTML=""}
+function bdRender(){if(!bdt)return;const b=S.bud.find(x=>x.id===bdt.id);if(!b){bdClose();return}
+  const st=bStat(b,bdt.off),C=2*Math.PI*70,Ln=C*240/360,fr=Math.min(1,st.r),ang=150+240*st.el;
+  const gauge=`<svg class="bgauge" viewBox="0 0 180 180" aria-hidden="true"><circle cx="90" cy="90" r="70" fill="none" style="stroke:var(--line)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${Ln} ${C}" transform="rotate(150 90 90)"/>${fr>0?`<circle cx="90" cy="90" r="70" fill="none" style="stroke:${st.col}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${Ln*fr} ${C}" transform="rotate(150 90 90)"/>`:""}${st.p.now&&st.p.n>1?`<g transform="rotate(${ang} 90 90)"><path d="M170 90l-9-6v12z" style="fill:var(--ink)"/></g>`:""}</svg>`;
+  const list=st.it.length?`<ul class="bdl">${st.it.slice(0,60).map(i=>`<li><span class="xic" style="background:${COL[i.c]||"#8892a6"}">${catIcon(i.c)}</span><span class="xl"><span class="xn">${esc(i.d)}</span><span class="xcat">${esc(i.c)} · ${esc(dgLabel(i.dt||(i.m+"-01")))}</span></span><span class="amt">-${eur2(i.a)}</span></li>`).join("")}</ul>`:`<div class="bnt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg><p>Nessuna transazione</p></div>`;
+  $("bd").innerHTML=`<div class="bdb" data-bdclose="1"></div><div class="bds" role="dialog" aria-modal="true"><div class="bdh"><button type="button" class="bxb" data-bdclose="1" aria-label="Chiudi">✕</button><b class="bdt">${b.c===""?"Budget complessivo":bEmo(b.c)+esc(b.c)}</b><button type="button" class="bxb" data-bdmenu="1" aria-label="Altro">⋯</button></div>${bdt.menu?`<div class="bmenu bdm"><button type="button" data-bdedit="1">✎ Modifica budget</button><button type="button" class="bdel" data-bddel="1">🗑︎ Elimina budget</button></div>`:""}<div class="bgw">${gauge}<div class="bgc"><b${st.left<0?' class="neg"':""}>${st.left<0?"−":""}${bAmt(st.left)}</b><small>${st.left<0?"oltre il budget di "+bAmt(b.a):"rimasti su "+bAmt(b.a)}</small></div></div>${list}<div class="bpn"><button type="button" data-bpn="-1" aria-label="Periodo precedente">‹</button><span>${bLbl(st.p,b.f)}</span><button type="button" data-bpn="1" aria-label="Periodo successivo"${bdt.off>=0?" disabled":""}>›</button></div></div>`}
+function bdAskDel(){const b=S.bud.find(x=>x.id===bdt.id);if(!b)return;bdt.menu=false;bdRender();const d=document.createElement("div");d.className="bcf";d.id="bcf";d.innerHTML=`<div class="bcb"><b>Eliminare il budget “${esc(bName(b.c))}”?</b><p>Questa azione non può essere annullata.</p><button type="button" class="bdo" data-bdelok="1">Elimina</button><button type="button" class="bdn" data-bdelno="1">Annulla</button></div>`;$("bd").appendChild(d)}
+document.addEventListener("click",e=>{const T=e.target;if(!T.closest)return;
+  const q=a=>{const x=T.closest("["+a+"]");return x};let x;
+  if((x=q("data-bnew"))){bsOpen();return}
+  if((x=q("data-bcard"))){bdOpen(x.dataset.bcard);return}
+  if(bs&&modal&&modal.kind==="budget-sheet"){
+    if((x=q("data-bdd"))){const k=x.dataset.bdd,n=$("bc_"+k);if(!n)return;const open=n.hidden;bsCloseDD(k);n.hidden=!open;x.setAttribute("aria-expanded",String(open));if(open){const on=n.querySelector(".on");if(on)n.scrollTop=Math.max(0,on.offsetTop-60)}return}
+    if(q("data-bnewcat")){bsRet=true;closeModal();show("categorie");return}
+    if((x=q("data-bsel"))){const k=x.dataset.bsel,v=x.dataset.v;if(k==="c")bs.c=v;else if(k==="f"){bs.f=v;bs.d=v==="w"?0:1;bs.mo=0}else if(k==="mo")bs.mo=+v;else if(k==="d")bs.d=+v;bsCloseDD();bsUpd();return}
+    if((x=q("data-bk"))){bs.a=amtNext(bs.a,x.dataset.bk);bsUpd();return}
+    if(q("data-bcreate")){bsCreate();return}
+    if(!T.closest(".nchips"))bsCloseDD();
+  }
+  if(bdt){
+    if(q("data-bdelok")){const b=S.bud.find(z=>z.id===bdt.id);if(b)S.bud=S.bud.filter(z=>z.id!==b.id);save();bdClose();renderBud();return}
+    if(q("data-bdelno")){const c=$("bcf");if(c)c.remove();return}
+    if(q("data-bdclose")){bdClose();return}
+    if(q("data-bdmenu")){bdt.menu=!bdt.menu;bdRender();return}
+    if(q("data-bdedit")){const id=bdt.id;bdt.menu=false;bdRender();bsOpen(id);return}
+    if(q("data-bddel")){bdAskDel();return}
+    if((x=q("data-bpn"))){bdt.off=Math.min(0,bdt.off+(+x.dataset.bpn));bdt.menu=false;bdRender();return}
+    if(bdt.menu&&!T.closest(".bdm")){bdt.menu=false;bdRender()}
+  }
+});
+function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","calendario","spese","budget","statistiche","impostazioni","appearance","appicon","notif","numentry","currency","categorie"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":SUBV.includes(v)?"impostazioni":v)));$("pill").hidden=v==="home"||v==="impostazioni"||SUBV.includes(v)||v==="entrate"||v==="budget";$("mrow").style.display=v==="statistiche"||v==="impostazioni"||v==="budget"||SUBV.includes(v)?"none":"";if(v==="budget")renderBud();if(v==="statistiche")renderStats();if(v==="currency")curOpen();if(v==="categorie")catOpen();$("mrow").classList.toggle("sp",v==="spese"||v==="ricorrenti");(v==="ricorrenti"?$("rbar"):v==="calendario"?$("cbar"):$("mrow")).appendChild($("pill"));if(v==="entrate")renderSalEd();if(v==="ricorrenti"){const e=$("v-entrate");e.hidden=false;e.style.visibility="hidden";renderSalEd();e.hidden=true;e.style.visibility=""}if(v==="calendario")renderCal();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
 $("f").addEventListener("submit",e=>{e.preventDefault();
@@ -821,7 +913,7 @@ document.addEventListener("click",e=>{
   {const SM={"Appearance":"appearance","App Icon":"appicon","Notifications":"notif","Number Entry":"numentry","Currency":"currency","Categories":"categorie"};if(t.dataset.set&&SM[t.dataset.set]){show(SM[t.dataset.set]);return}}
   if(t.dataset.nem){setNem(t.dataset.nem);return}
   if(t.dataset.nk){nkPress(t.dataset.nk);return}
-  if(t.dataset.back==="set"){show("impostazioni");return}
+  if(t.dataset.back==="set"){if(bsRet&&bs){bsRet=false;show("budget");bsShow();return}show("impostazioni");return}
   if(t.dataset.tp){setPref(t.dataset.tp,true);return}
   if(t.dataset.cur){curPick(t.dataset.cur);return}
   if(t.dataset.catTab){CT=t.dataset.catTab;catRender();return}
