@@ -123,7 +123,7 @@ const IC_TRAY='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l2-6.5A
 function catList(){return CT==="x"?ord().map(n=>({n,e:CEMO[n]||"\u{1F3F7}\uFE0F",c:COL[n]})):S.ci}
 function catSugList(){return CT==="x"?BSUG.concat(CSUGX).filter(z=>!Object.keys(CATS).some(k=>k.toLowerCase()===z[0].toLowerCase())&&!S.cx.some(k=>k.s===z[0])):CSUGI.filter(z=>!S.ci.some(k=>k.n.toLowerCase()===z[0].toLowerCase()||k.s===z[0]))}
 function catRender(){
-  const l=$("catl");if(!l)return;const x=CT==="x",list=catList(),sug=(CEDIT||S.csh)?[]:catSugList();
+  const l=$("catl");if(!l)return;const x=CT==="x",list=catList(),sug=(CEDIT||(S.csh&&!document.documentElement.classList.contains("onb")))?[]:catSugList();
   l.classList.toggle("edm",CEDIT);
   let h=`<h2 class="seth">${x?"CATEGORIE DI SPESA":"CATEGORIE DI ENTRATA"}</h2>`;
   h+=list.length?`<div class="card setc cul2" id="catul">${list.map(c=>`<div class="cr" data-cn="${esc(c.n)}"><span class="ce">${esc(c.e)}</span><span class="cn2">${esc(c.n)}</span><i class="csw" style="background:${c.c}"></i><span class="cgr">${IC_GRIP}</span></div>`).join("")}</div>`:`<div class="card cempty">${IC_TRAY}Nessuna categoria di ${x?"spesa":"entrata"} trovata: aggiungine una dai suggerimenti oppure premi \u201C+ Nuova Categoria\u201D.</div>`;

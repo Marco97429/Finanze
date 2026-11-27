@@ -549,4 +549,4 @@ html.obo,html.obo body{overflow:hidden}
 .obgo{width:100%;justify-content:center}
 .onbgo,.onbhint{display:none}
 html.onb .onbgo{display:grid;background:var(--g);border-color:var(--g);color:#06222a}html.onb .onbhint{display:block}
-html.onb header.hdr,html.onb nav,html.onb #pill{display:none!important}html.onb #v-categorie [data-back]{visibility:hidden;pointer-events:none}html.onb .cbar{bottom:18px}
+html.onb header.hdr,html.onb nav,html.onb #pill{display:none!important}html.onb #v-categorie [data-back]{visibility:hidden;pointer-events:none}html.onb .cbar{bottom:18px}html.onb #ceye,html.onb #cedit{display:none}html.onb #v-categorie .aph{grid-template-columns:44px 1fr 44px}html.onb #v-categorie .cact{justify-content:flex-end}
