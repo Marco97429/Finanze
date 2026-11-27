@@ -151,8 +151,7 @@ input,select,button{background:#f4f7fc}
   </section>
 
   <section id="v-calendario" hidden>
-    <h1 class="gh sth1">Calendario</h1>
-    <div class="rbar" id="cbar"></div>
+    <div class="rbar" id="cbar"><small class="eyebrow rt">Calendario</small></div>
     <div class="card"><div class="cwk" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div><div class="cgrid" id="cgrid"></div><div class="cleg"><span><i class="cdt o"></i>Uscita</span><span><i class="cdt i"></i>Entrata</span><span><i class="cdt so"></i>Programmata</span></div></div>
     <div class="card" id="cday" style="margin-top:12px"></div>
     <div class="card" id="cfc" style="margin-top:12px"></div>
@@ -183,10 +182,9 @@ input,select,button{background:#f4f7fc}
   </section>
 
   <section id="v-ricorrenti" hidden>
-    <h1 class="gh sth1">Entrate / Uscite Ricorrenti</h1>
-    <div class="rbar" id="rbar"></div>
-    <div class="card">
-      <div class="dh" style="align-items:center"><small class="eyebrow rt">Movimenti ricorrenti</small><button class="new" data-new="rec" type="button">NUOVO MOVIMENTO</button></div>
+        <div class="card">
+      <div class="sph rph"><small class="eyebrow rt">Movimenti ricorrenti</small><div class="spslot" id="rslot"></div><div class="spb"><button type="button" class="spc" id="rsb" data-rsearch="1" aria-label="Cerca un movimento" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button><button type="button" class="spc" id="rfb" data-rfilter="1" aria-label="Filtra i movimenti per" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button><div class="spmenu" id="rmenu" role="menu" hidden></div></div><button class="new rnew" data-new="rec" type="button">NUOVO MOVIMENTO</button></div>
+      <div class="spsr" id="rsr" hidden><input type="search" id="rq" placeholder="Cerca un movimento" aria-label="Cerca un movimento" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
       <div class="rsec"><span>Entrate</span></div>
       <ul id="rinc"></ul>
       <div class="rsec"><span>Spese <span class="cnt" id="rcnt2"></span></span></div>

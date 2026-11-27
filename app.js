@@ -333,18 +333,36 @@ function recRange(r){const fd=x=>dFmt.format(new Date(+x.slice(0,4),+x.slice(5,7
 function recRow2(r){const inc=r.t==="in",ic=inc?S.ci.find(c=>c.n===r.c):null,cn=inc?(r.c||"Entrata"):r.c,bg=inc?(ic?ic.c:"#34c28a"):(COL[r.c]||"#8892a6"),em=inc?(ic?ic.e:"\u{1F4B6}"):(CEMO[r.c]||"\u{1F3F7}️");
   return `<li class="row xr" data-recedit="${r.id}"><span class="xic" style="background:${bg}"><span class="cem" aria-hidden="true">${esc(em)}</span></span><span class="xl"><span class="xn">${esc(r.d)}</span><span class="xcat">${esc(cn)}</span></span><span class="amt">${inc?"+":"-"}${eur2(r.a)}</span></li>`}
 const FQG={m:"Mensili",q:"Trimestrali",s:"Semestrali",y:"Annuali"};
+let rf={q:"",mode:"freq"};
+const RFM={all:"Tutte le voci",freq:"Per frequenza",cat:"Per categoria"};
+function rFilt(list){const q=(rf.q||"").trim().toLowerCase();return q?list.filter(r=>(r.d+" "+(r.c||"")+" "+eur2(r.a)+" "+String(cvd(r.a)).replace(".",",")).toLowerCase().includes(q)):list}
 function recGroups(list,t){
-  return ["m","q","s","y"].map(f=>{
-    const g=list.filter(r=>(r.f||"m")===f).sort((a,b)=>{const x=recStart(a),y=recStart(b);return x<y?1:x>y?-1:(a.id>b.id?-1:a.id<b.id?1:0)});
-    if(!g.length)return "";
-    const k="r"+t+f,open=dgOpen[k]!==false,tot=g.reduce((x,r)=>x+r.a,0),sg=t==="i"?"+":"-";
-    return `<li class="dg"><button type="button" class="dgh" data-dg="${k}" aria-expanded="${open}" aria-label="${FQG[f]}: ${g.length} movimenti, totale ${eur2(tot)}"><span class="dgd">${FQG[f]}</span><span class="amt">${sg}${eur2(tot)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="dgl"${open?"":" hidden"}>${g.map(recRow2).join("")}</ul></li>`}).join("")}
+  const srt=(a,b)=>{const x=recStart(a),y=recStart(b);return x<y?1:x>y?-1:(a.id>b.id?-1:a.id<b.id?1:0)},sg=t==="i"?"+":"-",mode=rf.mode;
+  const box=(k,lb,g)=>{const open=dgOpen[k]!==false,tot=g.reduce((x,r)=>x+r.a,0);
+    return `<li class="dg"><button type="button" class="dgh" data-dg="${k}" aria-expanded="${open}" aria-label="${esc(lb)}: ${g.length} movimenti, totale ${eur2(tot)}"><span class="dgd">${esc(lb)}</span><span class="amt">${sg}${eur2(tot)}</span><span class="cgc">${open?IC_UP:IC_DN}</span></button><ul class="dgl"${open?"":" hidden"}>${g.map(recRow2).join("")}</ul></li>`};
+  if(mode==="all")return `<li class="dg"><ul class="dgl">${list.slice().sort(srt).map(recRow2).join("")}</ul></li>`;
+  if(mode==="cat"){const by={};list.forEach(r=>{const n=r.c||(t==="i"?"Entrata":"Altro");(by[n]=by[n]||[]).push(r)});
+    return Object.keys(by).sort((a,b)=>by[b].reduce((x,r)=>x+r.a,0)-by[a].reduce((x,r)=>x+r.a,0)).map(n=>box("r"+t+"c:"+n,n,by[n].sort(srt))).join("")}
+  return ["m","q","s","y"].map(f=>{const g=list.filter(r=>(r.f||"m")===f).sort(srt);return g.length?box("r"+t+f,FQG[f],g):""}).join("")}
 function renderRec(){
-  const outs=S.rec.filter(r=>r.t!=="in");
-  $("rec2").innerHTML=outs.length?recGroups(outs,"o"):'<li class="empty">Nessuna spesa ricorrente.</li>';renderInc()}
+  const outs=S.rec.filter(r=>r.t!=="in"),fo=rFilt(outs);
+  $("rec2").innerHTML=fo.length?recGroups(fo,"o"):`<li class="empty">${outs.length?"Nessun movimento trovato.":"Nessuna spesa ricorrente."}</li>`;renderInc()}
 function renderInc(){
-  const ins=S.rec.filter(r=>r.t==="in");
-  $("rinc").innerHTML=ins.length?recGroups(ins,"i"):'<li class="empty">Nessuna entrata ricorrente.</li>'}
+  const ins=S.rec.filter(r=>r.t==="in"),fi=rFilt(ins);
+  $("rinc").innerHTML=fi.length?recGroups(fi,"i"):`<li class="empty">${ins.length?"Nessun movimento trovato.":"Nessuna entrata ricorrente."}</li>`}
+function rUi(){const m=$("rmenu");if(!m)return;
+  $("rfb").classList.toggle("on",rf.mode!=="freq");$("rsb").classList.toggle("on",!!(rf.q||"").trim());
+  m.innerHTML=Object.keys(RFM).map(k=>`<button type="button" role="menuitemradio" aria-checked="${rf.mode===k}" class="${rf.mode===k?"on":""}" data-rmode="${k}"><span>${RFM[k]}</span>${rf.mode===k?IC_OK:""}</button>`).join("")}
+function rMenu(open){const m=$("rmenu");if(!m)return;if(open)rUi();m.hidden=!open;$("rfb").setAttribute("aria-expanded",String(!!open))}
+function rSClose(){const r=$("rsr");if(r&&!r.hidden){r.hidden=true;$("rq").blur();$("rsb").setAttribute("aria-expanded","false")}}
+document.addEventListener("click",e=>{const T=e.target;if(!T.closest||$("v-ricorrenti").hidden)return;
+  if(!T.closest("#rsr")&&!T.closest("[data-rsearch]"))rSClose();
+  const mb=T.closest("[data-rmode]");
+  if(mb){rf.mode=mb.dataset.rmode;rMenu(false);rUi();renderRec();return}
+  if(T.closest("[data-rfilter]")){rMenu($("rmenu").hidden);return}
+  if(T.closest("[data-rsearch]")){const r=$("rsr"),op=r.hidden;r.hidden=!op;$("rsb").setAttribute("aria-expanded",String(op));rMenu(false);if(op)$("rq").focus();else $("rq").blur();return}
+  if(!T.closest("#rmenu"))rMenu(false)});
+document.addEventListener("input",e=>{if(e.target.id==="rq"){rf.q=e.target.value;rUi();renderRec()}});
 const MOPT=Array.from({length:60},(_,i)=>{const d=new Date(2026,i,1),n=new Intl.DateTimeFormat("it-IT",{month:"long",year:"numeric"}).format(d);return `<option value="${mk(d)}">${n[0].toUpperCase()+n.slice(1)}</option>`}).join("");
 const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>';
 const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
@@ -836,7 +854,7 @@ document.addEventListener("click",e=>{const T=e.target;if(!T.closest)return;
     if(bdt.menu&&!T.closest(".bdm")){bdt.menu=false;bdRender()}
   }
 });
-function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","calendario","spese","budget","statistiche","impostazioni","appearance","appicon","notif","numentry","currency","categorie"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":SUBV.includes(v)?"impostazioni":v)));$("pill").hidden=v==="home"||v==="impostazioni"||SUBV.includes(v)||v==="entrate"||v==="budget";$("mrow").style.display=v==="statistiche"||v==="impostazioni"||v==="budget"||SUBV.includes(v)?"none":"";if(v==="budget")renderBud();if(v==="statistiche")renderStats();if(v==="currency")curOpen();if(v==="categorie")catOpen();$("mrow").classList.toggle("sp",v==="spese"||v==="ricorrenti");(v==="ricorrenti"?$("rbar"):v==="calendario"?$("cbar"):v==="spese"?$("spslot"):$("mrow")).appendChild($("pill"));if(v==="entrate")renderSalEd();if(v==="ricorrenti"){const e=$("v-entrate");e.hidden=false;e.style.visibility="hidden";renderSalEd();e.hidden=true;e.style.visibility=""}if(v==="calendario")renderCal();scrollTo(0,0)}
+function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","calendario","spese","budget","statistiche","impostazioni","appearance","appicon","notif","numentry","currency","categorie"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":SUBV.includes(v)?"impostazioni":v)));$("pill").hidden=v==="home"||v==="impostazioni"||SUBV.includes(v)||v==="entrate"||v==="budget";$("mrow").style.display=v==="statistiche"||v==="impostazioni"||v==="budget"||SUBV.includes(v)?"none":"";if(v==="budget")renderBud();if(v==="statistiche")renderStats();if(v==="currency")curOpen();if(v==="categorie")catOpen();$("mrow").classList.toggle("sp",v==="spese"||v==="ricorrenti");(v==="ricorrenti"?$("rslot"):v==="calendario"?$("cbar"):v==="spese"?$("spslot"):$("mrow")).appendChild($("pill"));if(v==="entrate")renderSalEd();if(v==="ricorrenti"){const e=$("v-entrate");e.hidden=false;e.style.visibility="hidden";renderSalEd();e.hidden=true;e.style.visibility=""}if(v==="calendario")renderCal();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
 $("f").addEventListener("submit",e=>{e.preventDefault();
