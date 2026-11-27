@@ -232,7 +232,7 @@ function syncAppr(){const p=themePref();document.querySelectorAll("[data-tp]").f
 function setPref(p,re){try{localStorage.setItem("spese-theme-v1",p)}catch(e){}applyTheme(p==="dark",re);syncAppr()}
 const KEY="spese-dashboard-v1";
 let S={salary:0,pct:{...CATS},items:[],cx:[],ci:[],csh:false};
-try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);S={...S,...p,pct:{...CATS,...(p.pct||{})}};delete S.name}}catch(e){}
+try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);S={...S,...p,pct:{...CATS,...(p.pct||{})}};delete S.name;if(S.onb===undefined)S.onb=1}else S.onb=0}catch(e){}
 function regCat(x){CATS[x.n]=0;COL_L[x.n]=x.c;COL_D[x.n]=x.c;COL[x.n]=x.c;CEMO[x.n]=x.e;if(S.pct)S.pct[x.n]=0;if(S.lim&&!S.lim[x.n])S.lim[x.n]={t:"eur",v:0}}
 if(!Array.isArray(S.cx))S.cx=[];if(!Array.isArray(S.ci))S.ci=[];
 if(!Array.isArray(S.cdel))S.cdel=[];
@@ -446,7 +446,7 @@ function cleanBud(a){const out=[],seen=new Set();if(!Array.isArray(a))return out
 function cleanCats(a,x){if(!Array.isArray(a))return[];const seen=new Set(),out=[];
   a.forEach(c=>{if(!c||typeof c.n!=="string"||typeof c.c!=="string"||!/^#[0-9a-f]{6}$/i.test(c.c))return;const n=catName(c.n),e=typeof c.e==="string"?c.e.replace(/[<>&"]/g,"").slice(0,12):"";
     if(!n||seen.has(n.toLowerCase())||(x&&CATS[n]!==undefined&&!(S.cx||[]).some(z=>z.n===n)))return;seen.add(n.toLowerCase());const q={n,e:e||"\u{1F3F7}\uFE0F",c:c.c},sr=typeof c.s==="string"?catName(c.s):"";if(sr)q.s=sr;out.push(q)});return out}
-function doImport(){if(!impData)return;S=impData;save();location.reload()}
+function doImport(){if(!impData)return;S=impData;S.onb=1;save();location.reload()}
 function openFail(){
   if(modal&&modal.kind==="fail")return;
   modal={kind:"fail"};
@@ -854,6 +854,11 @@ document.addEventListener("click",e=>{const T=e.target;if(!T.closest)return;
     if(bdt.menu&&!T.closest(".bdm")){bdt.menu=false;bdRender()}
   }
 });
+function obShow(){$("ob").hidden=false;document.documentElement.classList.add("obo");$("ob").querySelector(".obw").scrollTop=0}
+function obStep2(){$("ob").hidden=true;document.documentElement.classList.remove("obo");document.documentElement.classList.add("onb");CT="x";show("categorie")}
+function obDone(){const t=CT;CT="x";const n=catList().length;CT=t;
+  if(!n){CT="x";catRender();toast("Aggiungi almeno una categoria di spesa per continuare");return}
+  S.onb=1;save();document.documentElement.classList.remove("onb");show("home")}
 function show(v){if(!$("v-"+v))return;view=v;document.documentElement.classList.toggle("nosb",v==="entrate"||v==="statistiche");setTimeout(lockHome,0);["home","entrate","ricorrenti","calendario","spese","budget","statistiche","impostazioni","appearance","appicon","notif","numentry","currency","categorie"].forEach(x=>$("v-"+x).hidden=x!==v);document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.view===(v==="entrate"||v==="spese"||v==="ricorrenti"?"home":SUBV.includes(v)?"impostazioni":v)));$("pill").hidden=v==="home"||v==="impostazioni"||SUBV.includes(v)||v==="entrate"||v==="budget";$("mrow").style.display=v==="statistiche"||v==="impostazioni"||v==="budget"||SUBV.includes(v)?"none":"";if(v==="budget")renderBud();if(v==="statistiche")renderStats();if(v==="currency")curOpen();if(v==="categorie")catOpen();$("mrow").classList.toggle("sp",v==="spese"||v==="ricorrenti");(v==="ricorrenti"?$("rslot"):v==="calendario"?$("cbar"):v==="spese"?$("spslot"):$("mrow")).appendChild($("pill"));if(v==="entrate")renderSalEd();if(v==="ricorrenti"){const e=$("v-entrate");e.hidden=false;e.style.visibility="hidden";renderSalEd();e.hidden=true;e.style.visibility=""}if(v==="calendario")renderCal();scrollTo(0,0)}
 $("salary").addEventListener("input",e=>{const m=$("month").value,v=parseFloat(e.target.value);if(isNaN(v))delete S.sals[m];else S.sals[m]=Math.max(0,v);S.salary=isNaN(v)?0:Math.max(0,v);save();render()});
 $("month").addEventListener("change",()=>{syncSal();ensureRec();render()});
@@ -953,6 +958,9 @@ document.addEventListener("click",e=>{
   if(t.dataset.amok&&am)amDone();
   if(t.dataset.eye){S.hide=!S.hide;save();renderTop()}
   if(t.classList&&t.classList.contains("tg")){t.setAttribute("aria-checked",t.getAttribute("aria-checked")==="true"?"false":"true");if(t.id==="dtg")setDec(t.getAttribute("aria-checked")==="true");if(t.id==="ntg")noteToggle(t);if(t.id==="atg")authToggle(t);return}
+  if(t.dataset.obgo){obStep2();return}
+  if(t.dataset.obnext){obDone();return}
+  if(t.dataset.set==="Intro"){obShow();return}
   {const SM={"Appearance":"appearance","App Icon":"appicon","Notifications":"notif","Number Entry":"numentry","Currency":"currency","Categories":"categorie"};if(t.dataset.set&&SM[t.dataset.set]){show(SM[t.dataset.set]);return}}
   if(t.dataset.nem){setNem(t.dataset.nem);return}
   if(t.dataset.nk){nkPress(t.dataset.nk);return}
@@ -1009,6 +1017,7 @@ document.addEventListener("change",e=>{
   if(d.lm){S.lim[d.lm].t=e.target.value;save();render()}
   if(d.lv){S.lim[d.lv]={t:"eur",v:Math.max(0,inv(parseFloat(e.target.value)||0))};save();render()}});
 try{render()}catch(e){openFail()}
+if(S.onb===0)obShow();
 (function(){
   const tr=$("sb"),th=$("sbt"),de=document.documentElement;
   function upd(){const vh=innerHeight,dh=de.scrollHeight;
